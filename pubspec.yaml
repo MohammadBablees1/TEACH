@@ -1,0 +1,160 @@
+name: teach
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.5.4
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.8
+  # firebase_auth: ^5.3.2
+  cloud_firestore: ^5.4.5
+  firebase_storage: ^12.3.5
+  firebase_core: ^3.7.0
+  flutter_bloc: ^8.1.6
+  internet_connection_checker_plus: ^2.5.2
+  flutter_localization: ^0.2.2
+  sqflite: ^2.4.1
+  smooth_page_indicator: ^1.2.0+3
+  awesome_dialog: ^3.2.1
+  carousel_slider: ^5.0.0
+ # device_info_plus: ^11.2.0
+  pretty_qr_code: ^3.3.0
+  qr_flutter: ^4.1.0
+  ai_barcode_scanner: ^6.0.1
+  flutter_native_splash: ^2.4.3
+  uuid: ^4.5.1
+  image_picker: ^1.1.2
+  percent_indicator: ^4.2.4
+  dots_indicator: ^3.0.0
+  media_kit: ^1.1.11
+  pod_player: ^0.2.2
+  get_thumbnail_video: ^0.7.3
+  # permission_handler: ^11.3.1
+  video_thumbnail_imageview: ^0.0.5
+  video_player: ^2.9.2
+  # math_keyboard: ^0.3.1
+  # flutter_tex: ^4.0.3+4
+  syncfusion_flutter_pdfviewer: ^27.2.5
+  flutter_staggered_animations: ^1.1.1
+  cached_firestorage: ^0.3.0
+  hive_flutter: ^1.1.0
+  hive: ^2.2.3
+  share_plus: ^10.1.2
+  pdf: ^3.11.1
+  google_fonts: ^6.2.1
+  mobile_device_identifier: ^0.0.3
+  cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
+  connectivity_plus: ^6.1.3
+  fluttertoast: ^8.2.12
+  url_launcher: ^6.3.1
+  dropdown_button2: ^2.3.9
+  fab_circular_menu: ^1.0.0
+  popup_menu_plus: ^0.0.6
+  #mobile_scanner: ^6.0.2
+  supabase_flutter: ^2.8.4
+
+  # better_player: ^0.0.84
+  
+  # supabase_flutter: ^2.8.3
+  # flutter_dotenv: ^5.2.1
+  
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+  flutter_lints: ^4.0.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - images/welcom_2.png
+    - images/welcom_3.png
+    - images/welcom4.png
+    - images/loading.gif
+    - images/no_data.gif
+    - images/student_meet.png
+    - images/manager.png
+    - images/main_manger.png
+    - images/log_in.png
+    - images/account.png
+    - images/icon.jpg
+    - images/qr_icon.png
+    - images/back.jpg
+    - video/init.mp4
+    - images/not_connected.gif
+    - images/file_loading.gif
+    - images/no_data_foumnd.gif
+    - images/no_folder.gif
+    - images/no_data.jpg
+    - images/book.png
+    - images/add_book.png
+    - images/add_ads.png
+    - images/video.png
+    - images/update.png
+    - images/university.png
+    - images/classroom.png
+    - images/white_icon.jpg
+    
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/to/resolution-aware-images
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/to/asset-from-package
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  fonts:
+    - family: NotoSansArabic
+      fonts:
+        - asset: font/Noto_Sans_Arabic/static/NotoSansArabic_Condensed-Black.ttf
+     
+  
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package
