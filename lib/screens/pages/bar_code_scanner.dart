@@ -23,8 +23,11 @@ class BarCodeScanner extends StatefulWidget {
 class _BarCodeScannerState extends State<BarCodeScanner>
     with WidgetsBindingObserver {
   final MobileScannerController controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.normal,
+    detectionSpeed: DetectionSpeed.noDuplicates,
     useNewCameraSelector: false,
+    torchEnabled: false,
+  formats: [BarcodeFormat.all],
+
   );
 
   StreamSubscription<Object?>? _subscription;
