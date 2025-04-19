@@ -1,17 +1,13 @@
 import 'dart:async';
 
 import 'package:ai_barcode_scanner/ai_barcode_scanner.dart';
-import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:teach/data/consts/app_const.dart';
-import 'package:teach/data/widgets/lunch.dart';
-import 'package:teach/screens/main_screen.dart';
-import 'package:teach/screens/pages/log_in.dart';
+
 import 'package:teach/screens/pages/sign_in.dart';
+import 'package:teach/screens/pages/student_main_screen.dart';
 
 class BarCodeScanner extends StatefulWidget {
   var userEmail1 = "", userPassword1 = "", check = true, once = true;
@@ -27,7 +23,8 @@ class BarCodeScanner extends StatefulWidget {
 class _BarCodeScannerState extends State<BarCodeScanner>
     with WidgetsBindingObserver {
   final MobileScannerController controller = MobileScannerController(
-    detectionSpeed: DetectionSpeed.noDuplicates,
+    detectionSpeed: DetectionSpeed.normal,
+    useNewCameraSelector: false,
   );
 
   StreamSubscription<Object?>? _subscription;
@@ -106,6 +103,11 @@ class _BarCodeScannerState extends State<BarCodeScanner>
     } else {
       print(barcode);
       print("+++++++++++++++");
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StudentMainScreen(),
+          ));
     }
 
     // Optionally, return the scanned barcode to the previous screen
@@ -120,7 +122,6 @@ class _BarCodeScannerState extends State<BarCodeScanner>
         showSuccess: true,
         hideGalleryButton: true,
         hideSheetDragHandler: true,
-        
         sheetTitle:
             getDeviceLocale() == "ar" ? "البحث عن كود" : "Search for code",
         onDetect: (BarcodeCapture barcodeCapture) {
