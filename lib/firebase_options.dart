@@ -50,19 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCIvifvlHRn_TojjgFyOQsVYb1YT_DTlZ0',
-    appId: '1:1051650281425:android:a8a1685942afcd5ed59af0',
-    messagingSenderId: '1051650281425',
+    apiKey: 'api',
+    appId: 'api',
+    messagingSenderId: 'app',
     projectId: 'al-multka-af65e',
-    storageBucket: 'al-multka-af65e.firebasestorage.app',
+    storageBucket: 'app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCsQV6gDqKihcxlE-bTKZTiqg4eet1dmK4',
-    appId: '1:1051650281425:ios:934d9bf9900e2d66d59af0',
-    messagingSenderId: '1051650281425',
+    apiKey: 'api',
+    appId: 'api',
+    messagingSenderId: 'app',
     projectId: 'al-multka-af65e',
-    storageBucket: 'al-multka-af65e.firebasestorage.app',
+    storageBucket: 'app',
     iosBundleId: 'com.example.teach',
   );
 }
