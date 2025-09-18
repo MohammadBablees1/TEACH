@@ -1,1 +1,4 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"al-multka-af65e","appId":"1:1051650281425:android:a8a1685942afcd5ed59af0","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"al-multka-af65e","configurations":{"android":"1:1051650281425:android:a8a1685942afcd5ed59af0","ios":"1:1051650281425:ios:934d9bf9900e2d66d59af0"}}}}}}
+{"flutter":{"platforms":{"android":{"default":{"projectId":"al-multka-af65e","appId":"id","fileOutput":"android/app/google-services.json"}}
+  ,"dart":{"lib/firebase_options.dart":
+    {"projectId":"al-multka-af65e","configurations":
+      {"android":"id","ios":"id"}}}}}}
