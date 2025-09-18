@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "1051650281425",
+    "project_number": "number",
     "project_id": "al-multka-af65e",
-    "storage_bucket": "al-multka-af65e.firebasestorage.app"
+    "storage_bucket": "stirage"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1051650281425:android:a8a1685942afcd5ed59af0",
+        "mobilesdk_app_id": "id",
         "android_client_info": {
           "package_name": "com.example.teach"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCIvifvlHRn_TojjgFyOQsVYb1YT_DTlZ0"
+          "current_key": "key"
         }
       ],
       "services": {
