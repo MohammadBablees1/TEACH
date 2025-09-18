@@ -25,10 +25,8 @@ class PageVeiwScreen extends StatelessWidget {
                   controller: pageController,
                   children: [
                     Welcom(
-                      imagePath: ["images/welcom4.png"],
-                      // imagePath: [
-                      //   "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNDE3YjB5dGd6d21qczB1NXB1b28yYnhnbXQ4eXU4ZWdzam1janYzaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/bcKmIWkUMCjVm/giphy.gif"
-                      // ],
+                      imagePath: const ["images/welcom4.png"],
+                      
                       description1: getDeviceLocale() == "ar"
                           ? Translation()
                               .translateMe["Arabic"]!["welcom_screen11"]

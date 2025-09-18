@@ -1,25 +1,22 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:teach/cubit/lunch_loading_cubit/lunch_loading_cubit.dart';
-import 'package:teach/cubit/teachCubit/teach_cubit.dart';
-import 'package:teach/cubit/upload_video_cubit/upload_video_cubit.dart';
+
 import 'package:teach/data/consts/day_neight.dart';
-import 'package:teach/data/consts/sql_const.dart';
+
 import 'package:teach/data/modules/translate_consts.dart';
 import 'package:teach/data/repository/folder_repo.dart';
-import 'package:teach/data/sql/sql.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:teach/data/widgets/lunch.dart';
+
 import 'package:teach/main.dart';
 
 var appNameInArabic = "الملتقى";
@@ -74,6 +71,13 @@ var isManager = "manager";
 var isMainManager = "main_manager";
 var isCode = "code";
 var isFile = "file";
+var watching = "watch";
+var editing = "edite";
+var noting = "not";
+var deleting = "de;eting";
+
+const appVersion = "1.0.0";
+
 String getDeviceLocale() {
   if (language) {
     return "en";
@@ -264,112 +268,43 @@ getCodeFromGrade(catName) {
   return codeOfGrade[catName];
 }
 
-Future<List<String>> getTruthSubject(cateName) async {
+Future<List<String>> getTruthSubject() async {
   var catName = "";
   var id;
-  for (var i = 0; i < itemsInEnglish.length; i++) {
-    if (cateName == itemsInArabic[i]) {
-      cateName = itemsInEnglish[i];
-      break;
-    }
-  }
-  if (catName == "") {
-    catName = cateName;
-  }
-  if (getCodeFromGrade(catName) == 5) {
-    if (getDeviceLocale() == "ar") {
-      return primaryInArabic;
-    } else {
-      return primaryInEnglish;
-    }
-  } else if (getCodeFromGrade(catName) == 8) {
-    if (getDeviceLocale() == "ar") {
-      return preparatoryInArabic;
-    } else {
-      return preparatoryInEnglish;
-    }
-  } else if (getCodeFromGrade(catName) == 11) {
-    if (getDeviceLocale() == "ar") {
-      return secondaryInArabic;
-    } else {
-      return secondaryInEnglish;
-    }
-  } else {
-    final FolderRepository _repo = FolderRepository(supabase);
-    var data = await _repo.getRootFolders();
-    List<String> universityItems = [];
 
-    universety = data;
+  catName = itemsInEnglish[3];
 
-    if (universety.length > 1) {
-      for (var i = 0; i < universety.length; i++) {
-        if (!school.contains(universety[i].name))
-          universityItems.add(universety[i].name.toString());
-      }
-      if (universityItems.isEmpty) {
-        return [
-          getDeviceLocale() == "ar"
-              ? "لا يوجد كورسات جامعية بعد"
-              : "There are no university courses yet."
-        ];
-      }
-      return universityItems;
-    } else {
+  final FolderRepository _repo = FolderRepository(supabase);
+  var data = await _repo.getRootFolders();
+  List<String> universityItems = [];
+
+  universety = data;
+
+  if (universety.length >= 1) {
+    for (var i = 0; i < universety.length; i++) {
+      universityItems.add(universety[i].name.toString());
+    }
+    if (universityItems.isEmpty) {
       return [
         getDeviceLocale() == "ar"
             ? "لا يوجد كورسات جامعية بعد"
             : "There are no university courses yet."
       ];
     }
+    return universityItems;
+  } else {
+    return [
+      getDeviceLocale() == "ar"
+          ? "لا يوجد كورسات جامعية بعد"
+          : "There are no university courses yet."
+    ];
   }
 }
 
 List universety = [];
 var mode = false;
 
-Future<bool> deleteDirectory(String directoryPath) async {
-  if (await checkConnection()) {
-    final storageRef = FirebaseStorage.instance.ref(directoryPath);
-    var storageRef1;
-    try {
-      // List all files in the directory
-      final listResult = await storageRef.listAll();
-      if (listResult.prefixes.length == 0) {
-        for (var prefix in listResult.prefixes) {
-          await deleteDirectory(prefix.fullPath);
-        }
-        // Delete all files
-        for (var item in listResult.items) {
-          await item.delete();
-        }
-
-        // Recursively delete subdirectories
-
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  } else {
-    return false;
-  }
-}
-
-Future<File> downloadAndCacheFile(
-    String firebasePath, String localFilename) async {
-  final storageRef = FirebaseStorage.instance.ref(firebasePath);
-  final dir = await getApplicationDocumentsDirectory();
-  final localFile = File('${dir.path}/$localFilename');
-
-  if (!localFile.existsSync()) {
-    await storageRef.writeToFile(localFile);
-  }
-  return localFile;
-}
-
-bool checkPermision() {
+bool checkPermision(editing, deleting, watching, coding, uploading, not) {
   var box = Hive.box(hiveBoxName);
 
   var check = box.get(isMainManager);
@@ -378,8 +313,10 @@ bool checkPermision() {
   }
   if (!check) {
     check = box.get(isManager);
+
     if (check) {
-      check = checkFilePermision();
+      check =
+          checkFilePermision(editing, deleting, watching, coding, uploading, not);
     }
   }
 
@@ -396,19 +333,121 @@ checkManager() {
 
 bool checkCodePermision() {
   var box = Hive.box(hiveBoxName);
+  if (box.get(isMainManager) != null) {
+    if (box.get(isMainManager)) {
+      return true;
+    }
+  }
   if (box.get(isCode) == null) {
-    return true;
+    return false;
   }
   return box.get(isCode);
 }
 
-bool checkFilePermision() {
-  var box = Hive.box(hiveBoxName);
-  if (box.get(isFile) == null) {
-    return true;
+Future<void> showNotification(RemoteMessage message) async {
+  if (message.notification != null) {
+    await AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        channelKey: 'basic_channel',
+        title: message.notification?.title ?? 'New Notification',
+        body: message.notification?.body ?? 'You have a new message',
+      ),
+    );
+  }
+}
+
+Future<void> registerFCMToken() async {
+  // 1. الحصول على رمز الجهاز من Firebase
+  String? token = await FirebaseMessaging.instance.getToken();
+
+  // 2. إذا كان المستخدم مسجل الدخول، احفظ الرمز في Supabase
+  final user = Supabase.instance.client.auth.currentUser;
+
+  if (user != null && token != null) {
+    var box = Hive.box(hiveBoxName);
+    final data = await supabase
+        .from("current_user")
+        .select()
+        .eq("id", user.id)
+        .maybeSingle();
+    await Supabase.instance.client.from('users').upsert({
+      'id': user.id,
+      'fcm_token': token,
+      "role":
+          box.get(isMainManager) || box.get(isManager) ? "" : data!["category"],
+      'updated_at': DateTime.now().toIso8601String(),
+    });
   }
 
-  return box.get(isFile);
+  // 3. تحديث الرمز تلقائياً إذا تغير (مهم للأمان)
+  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+    if (user != null) {
+      await Supabase.instance.client
+          .from('users')
+          .upsert({'id': user.id, 'fcm_token': newToken});
+    }
+  });
+  await FirebaseMessaging.instance.subscribeToTopic('all_users');
+}
+
+Future initUserInfo() async {
+  var hiveInfo = [];
+  var info = supabase.auth.currentUser;
+  var box = Hive.box(hiveBoxName);
+
+  var checkInternet = await checkConnection();
+  var data;
+  if (box.get("info") == null && checkInternet) {
+    if (box.get(isStudent)) {
+      data = await supabase
+          .from("current_user")
+          .select()
+          .eq("email", info!.email.toString())
+          .maybeSingle();
+    } else if (box.get(isManager)) {
+      data = await supabase
+          .from("manager")
+          .select()
+          .eq("email", info!.email.toString())
+          .maybeSingle();
+    } else if (box.get(isMainManager)) {
+      data = await supabase
+          .from("main_manager")
+          .select()
+          .eq("email", info!.email.toString())
+          .maybeSingle();
+    }
+
+    //  print(info.email.toString());
+    if (data != null) {
+      hiveInfo.add(data["name"]);
+      hiveInfo.add(data["phone"]);
+      hiveInfo.add(data["email"]);
+
+      box.put("info", hiveInfo);
+    }
+  }
+}
+
+bool checkFilePermision(editing1, deleting1, watching1, coding1, uploading1, not) {
+  var box = Hive.box(hiveBoxName);
+
+  if (editing1) {
+    return editing1.toString() == box.get(editing).toString().trim();
+  } else if (deleting1) {
+    return deleting1.toString() == box.get(deleting).toString().trim();
+  } else if (watching1) {
+    return watching1.toString() == box.get(watching).toString().trim();
+  } else if (coding1) {
+    return coding1.toString() == box.get(isCode).toString().trim();
+  } else if (uploading1) {
+    return uploading1.toString() == box.get(isFile).toString().trim();
+  } else if(not){
+     return not.toString() == box.get(noting).toString().trim();
+  } else {
+    return true;
+  }
 }
 
 emailValidator(String email) {
@@ -453,11 +492,36 @@ newPasswordValidator(String password) {
   }
 }
 
+confirmPassword(String password, String confirmPassword) {
+  if (password.isEmpty) {
+    return getDeviceLocale() == "ar"
+        ? "لا يمكن أن يكون هذا الحقل فارغاً"
+        : "This field cannot be empty.";
+  } else if (password != confirmPassword) {
+    return getDeviceLocale() == "ar" ? "لا يوجد تطابق" : "No match";
+    // return getDeviceLocale() == "ar" ? "يجب أن يكون طول كلمة السر على الأقل 9" : "Password length must be at least 9";
+  }
+}
+
 nameValidator(String name) {
   if (name.isEmpty) {
     return getDeviceLocale() == "ar"
         ? "لا يمكن أن يكون هذا الحقل فارغاً"
         : "This field cannot be empty.";
+  }
+}
+
+customNameValidator(String name) {
+  if (name.isEmpty) {
+    return getDeviceLocale() == "ar"
+        ? "لا يمكن أن يكون هذا الحقل فارغاً"
+        : "This field cannot be empty.";
+  } else if (name.toString().split(" ").length == 1 ||
+      name.toString().split(" ")[1] == " " ||
+      name.toString().split(" ")[1].isEmpty) {
+    return getDeviceLocale() == "ar"
+        ? "يجب كتابة اسمك الكامل هنا!"
+        : "Your full name must be written here!";
   }
 }
 
@@ -511,7 +575,8 @@ bool containsNonDigits(String input) {
 
 bool isValidString(String input) {
   // شرط 1: يحتوي على 6 أحرف على الأقل
-  bool hasMin6Letters = RegExp(r'[a-zA-Zء-ي]{6,}').hasMatch(input);
+  bool hasMin6Letters =
+      input.replaceAll(RegExp(r'[^a-zA-Zء-ي]'), '').length >= 6;
 
   // // شرط 2: يحتوي على 3 أرقام على الأقل
   // bool hasMin3Digits = RegExp(r'\d{3,}').hasMatch(input);
@@ -566,7 +631,11 @@ Center connection_widget(width, height, BuildContext context) {
               height: getHeight(context) / 10,
             ),
           ),
-          Text(
+          AutoSizeText(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            minFontSize: 10,
+            maxFontSize: 15,
             getDeviceLocale() == "ar"
                 ? Translation().translateMe["Arabic"]!["wifi_Not_Connected"]
                 : Translation().translateMe["English"]!["wifi_Not_Connected"],
@@ -583,7 +652,11 @@ Center connection_widget(width, height, BuildContext context) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         backgroundColor:
                             mode ? nightBar["buttons"] : dayBar["blue2"],
-                        content: Text(
+                        content: AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           getDeviceLocale() == "ar"
                               ? "أنت غير متصل"
                               : "You are not connected!",
@@ -600,7 +673,11 @@ Center connection_widget(width, height, BuildContext context) {
                               color: Colors.white,
                             ),
                           )
-                        : Text(
+                        : AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             getDeviceLocale() == "ar"
                                 ? Translation()
                                     .translateMe["Arabic"]!["try_again"]
@@ -608,7 +685,11 @@ Center connection_widget(width, height, BuildContext context) {
                                     .translateMe["English"]!["try_again"],
                             style: TextStyle(color: Colors.white),
                           )
-                    : Text(
+                    : AutoSizeText(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        minFontSize: 10,
+                        maxFontSize: 15,
                         getDeviceLocale() == "ar"
                             ? Translation().translateMe["Arabic"]!["try_again"]
                             : Translation()
@@ -625,68 +706,26 @@ Center connection_widget(width, height, BuildContext context) {
   );
 }
 
-Future<bool> checkVedioPermision(String folder) async {
-  var box = Hive.box(hiveBoxName);
-  var n = [];
-  if (box.get(isMainManager) != null && box.get(isMainManager)) {
-    return true;
-  }
-  var user = supabase.auth.currentUser!.id;
-  var data =
-      await FirebaseFirestore.instance.collection("user").doc(user).get();
-
-  List codes = await data.data()!["codes"];
-
-  if (codes.isEmpty) {
-    return false;
-  } else {
-    for (var i = 0; i < codes.length; i++) {
-      var code = codes[i];
-
-      if (folder == code["name"].toString().split("-").join("/")) {
-        n.add(folder);
-        box.put("codeX", n);
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
 Future<List<String>> fetchCourses() async {
   List<String> courses = [];
-  var parentId = true;
-  var rootName = "";
-  var loop;
-  var copyLoop;
-  var courceName = "";
+
   var codeNameFormate = "";
   try {
-    List data = await supabase.storage.from("curces").list();
+    List data = await supabase.from("curces").select();
 
-    for (var i = 0; i < data.length; i++) {
-      loop = await supabase
-          .from("folders")
-          .select()
-          .eq("id", int.parse(data[i].name));
-      courceName = loop[0]["name"];
-      loop = loop[0];
-      while (parentId) {
-        if (loop["parent_id"] == null) {
-          rootName = loop["name"];
-          parentId = false;
-        } else {
-          copyLoop = loop;
-          loop = await supabase
-              .from("folders")
-              .select()
-              .eq("id", loop["parent_id"]);
-          loop = loop[0];
-        }
-      }
-
-      codeNameFormate = "${rootName}-${copyLoop["name"]}-${courceName}";
-
+    List foldersId = data
+        .map(
+          (e) => e["folder_id"],
+        )
+        .toSet()
+        .toList();
+    for (var i = 0; i < foldersId.length; i++) {
+      var curce =
+          await supabase.from("curces").select().eq("folder_id", foldersId[i]);
+      var curceName =
+          await supabase.from("folders").select().eq("id", foldersId[i]);
+      codeNameFormate =
+          "${curce[0]["grade"]}-${curce[0]["class"]}-${curceName[0]["name"]}";
       courses.add(codeNameFormate);
     }
   } catch (e) {
@@ -794,4 +833,23 @@ String handleAuthError(AuthException e, String locale) {
           ? "خطأ في المصادقة: ${e.message}"
           : "Authentication error: ${e.message}";
   }
+}
+
+Widget myImageAsset(String path, context) {
+  return Container(
+    width: 90,
+    height: 90,
+    child: Image.asset(
+      path,
+      width: 90,
+      height: 90,
+      fit: BoxFit.cover,
+    ),
+  );
+}
+
+String extractPathFromUrl(String publicUrl) {
+  final uri = Uri.parse(publicUrl);
+  final path = uri.path.split('/storage/v1/object/public/curces/').last;
+  return path;
 }

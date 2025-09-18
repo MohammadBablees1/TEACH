@@ -16,7 +16,7 @@ class UserFound extends TeachState {
   
  
 }
-
+class UpdateRecomended extends TeachState {}
 class IsLoading extends TeachState {}
 
 class SelectedAcount extends TeachState {

@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
 import 'package:share_plus/share_plus.dart';
@@ -34,7 +35,12 @@ class _CodesState extends State<Codes> {
                 bottomRight: Radius.circular(30),
                 bottomLeft: Radius.circular(30))),
         centerTitle: true,
-        title: Text(widget.name),
+        title: AutoSizeText(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            minFontSize: 10,
+            maxFontSize: 15,
+            widget.name),
         leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
@@ -61,10 +67,7 @@ class _CodesState extends State<Codes> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Center(
-                  child: Container(
-                      width: getWidth(context),
-                      height: getHeight(context) / 2,
-                      child: Image.asset("images/loading.gif")),
+                  child: myImageAsset("images/loading.gif", context),
                 );
               } else if (!snapshot.hasData) {
                 return Container(
@@ -99,7 +102,7 @@ class _CodesState extends State<Codes> {
                               context: context,
                               builder: (context) => AlertDialog(
                                 content: Container(
-                                  height: getHeight(context) / 2.61,
+                                  height: getHeight(context) * .5,
                                   child: Column(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -117,60 +120,111 @@ class _CodesState extends State<Codes> {
                                           // ),
                                         ),
                                       ),
-                                      IconButton(
-                                          onPressed: () async {
-                                            final qrCode = QrCode.fromData(
-                                              data: data[index],
-                                              errorCorrectLevel:
-                                                  QrErrorCorrectLevel.M,
-                                            );
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          ElevatedButton(
+                                              onPressed: () async {
+                                                final qrCode = QrCode.fromData(
+                                                  data: data[index],
+                                                  errorCorrectLevel:
+                                                      QrErrorCorrectLevel.M,
+                                                );
 
-                                            final qrImage = QrImage(qrCode);
-                                            final qrImageData =
-                                                await qrImage.toImageAsBytes(
-                                              size: 512,
-                                              format: ImageByteFormat.png,
-                                              decoration:
-                                                  const PrettyQrDecoration(
-                                                shape: PrettyQrSmoothSymbol(),
-                                                background: Colors.white,
-                                                //   image:
-                                                //       PrettyQrDecorationImage(
-                                                //     image: AssetImage(
-                                                //         'images/icon.jpg'),
-                                                //   ),
-                                                // ),
-                                              ),
-                                            );
-                                            if (qrImageData == null) {
-                                              throw Exception(
-                                                  'Failed to generate QR code bytes.');
-                                            }
-                                            final Uint8List qrImageBytes =
-                                                qrImageData.buffer
-                                                    .asUint8List();
-                                            final tempDir =
-                                                await getTemporaryDirectory();
-                                            final tempFile = File(
-                                                '${tempDir.path}/qr_image.png');
-                                            await tempFile
-                                                .writeAsBytes(qrImageBytes);
+                                                final qrImage = QrImage(qrCode);
+                                                final qrImageData =
+                                                    await qrImage
+                                                        .toImageAsBytes(
+                                                  size: 512,
+                                                  format: ImageByteFormat.png,
+                                                  decoration:
+                                                      const PrettyQrDecoration(
+                                                    shape:
+                                                        PrettyQrSmoothSymbol(),
+                                                    background: Colors.white,
+                                                    //   image:
+                                                    //       PrettyQrDecorationImage(
+                                                    //     image: AssetImage(
+                                                    //         'images/icon.jpg'),
+                                                    //   ),
+                                                    // ),
+                                                  ),
+                                                );
+                                                if (qrImageData == null) {
+                                                  throw Exception(
+                                                      'Failed to generate QR code bytes.');
+                                                }
+                                                final Uint8List qrImageBytes =
+                                                    qrImageData.buffer
+                                                        .asUint8List();
+                                                final tempDir =
+                                                    await getTemporaryDirectory();
+                                                final tempFile = File(
+                                                    '${tempDir.path}/qr_image.png');
+                                                await tempFile
+                                                    .writeAsBytes(qrImageBytes);
 
-                                            final result =
-                                                await Share.shareXFiles(
-                                                    [XFile(tempFile.path)]);
-                                          },
-                                          icon: Icon(
-                                            Icons.share,
-                                            color: dayBar["blue2"],
-                                          )),
+                                                final result =
+                                                    await Share.shareXFiles(
+                                                        [XFile(tempFile.path)]);
+                                              },
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.image,
+                                                    color: Colors.white,
+                                                  ),
+                                                  AutoSizeText(
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      minFontSize: 10,
+                                                      maxFontSize: 15,
+                                                      getDeviceLocale() == "ar"
+                                                          ? "مشاركة صورة"
+                                                          : "Share image",
+                                                      style: TextStyle(
+                                                          color: Colors.white)),
+                                                ],
+                                              )),
+                                          ElevatedButton(
+                                              onPressed: () async {
+                                                await Share.share(data[index]);
+                                              },
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.text_fields,
+                                                    color: Colors.white,
+                                                  ),
+                                                  AutoSizeText(
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    minFontSize: 10,
+                                                    maxFontSize: 15,
+                                                    getDeviceLocale() == "ar"
+                                                        ? "مشاركة نص"
+                                                        : "Share text",
+                                                    style: TextStyle(
+                                                        color: Colors.white),
+                                                  ),
+                                                ],
+                                              )),
+                                        ],
+                                      ),
                                     ],
                                   ),
                                 ),
                               ),
                             );
                           },
-                          child: Text(
+                          child: AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             data[index],
                             style: TextStyle(color: Colors.white),
                           ),
@@ -189,13 +243,13 @@ class _CodesState extends State<Codes> {
 
   Future<List<String>> fetchCodesByName(String name) async {
     var data = await supabase.from("codes").select().eq("name", widget.name);
-   
+
     List<String> sendData = data
         .map(
           (e) => e["id"] as String,
         )
         .toList();
-   
+
     // Extract document IDs (codes)
     return sendData;
   }
@@ -263,6 +317,8 @@ class _CodesState extends State<Codes> {
               ),
 
               pw.Text(
+                maxLines: 1,
+                
                 widget.name,
                 style: pw.TextStyle(
                   fontSize: 16,

@@ -1,16 +1,17 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:get_thumbnail_video/index.dart';
-import 'package:path_provider/path_provider.dart';
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/services.dart';
-import 'package:get_thumbnail_video/video_thumbnail.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
+import 'package:supabase_progress_uploads/supabase_progress_uploads.dart';
 import 'package:teach/data/consts/app_const.dart';
+import 'package:teach/data/consts/day_neight.dart';
 import 'package:teach/data/widgets/lunch.dart';
 import 'package:teach/main.dart';
 
@@ -18,30 +19,57 @@ part 'upload_video_state.dart';
 
 class UploadVideoCubit extends Cubit<UploadVideoState> {
   UploadVideoCubit() : super(UploadVideoInitial()) {}
-  Future<String?> uploadFile(String filePath, String folderName,
-      String fileName, String videoName) async {
+  Future<String?> uploadFile(
+      String filePath, String videoName, len, position) async {
+    try{
+      var box = Hive.box(hiveBoxName);
+    var percent = box.get("per");
+    if (percent == null) {
+      box.put("per", 0.0);
+    }
+    var value = box.get("per");
+
+    var color = getRandomColorWithOpacity();
+    emit(ChangePercentage(percent: value, color: color));
+
     final file = File(filePath);
+    final uploadService = SupabaseUploadService(supabase, 'curces');
 
-    final fileExtension = filePath.split('.').last;
-    String sanitized = videoName.replaceAll(RegExp(r'[^\w\-\.]'), '_');
-    sanitized = sanitized.replaceAll(RegExp(r'_+'), '_');
+    final response = await uploadService.uploadFile(
+      XFile(file.path),
+      onUploadProgress: (progress) {
+        value = ((progress.floor() / 100) * (1 / len)) + box.get("per");
 
-    // Remove leading/trailing underscores
-    sanitized = sanitized.replaceAll(RegExp(r'^_|_$'), '');
+        emit(ChangePercentage(percent: value, color: color));
+      },
+    );
+    box.put("per", value);
 
-    final storagePath = '$folderName/$sanitized/$fileName.$fileExtension';
-
-    final response =
-        await supabase.storage.from('curces').upload(storagePath, file);
+// Then move to desired folder
 
     // Get public URL
-    final String publicUrl =
-        supabase.storage.from('curces').getPublicUrl(storagePath);
+    String? publicUrl = response;
 
     return publicUrl;
+    }catch (e, stackTrace) {
+  if (kDebugMode) {
+    print("Error uploading file: $e");
+  }
+  if (kDebugMode) {
+    print("Stack trace: $stackTrace");
+  }
+  return null;
+}
+  }
+
+  String sanitizePath(String path) {
+    return path
+        .replaceAll(RegExp(r'[^\w\-\./]'), '_')
+        .replaceAll(RegExp(r'_+'), '_');
   }
 
   Future<void> saveCourse({
+    required parent_id,
     required String videoPath,
     required List pdfPaths,
     required String courseName,
@@ -49,170 +77,191 @@ class UploadVideoCubit extends Cubit<UploadVideoState> {
     required List choices,
     required List answers,
     required String videoName,
+    required String imagePath,
+    required bool locked,
+    required bool isTeacher,
+    required bool isFolder,
+    required bool isFree,
+    required String price,
+    required String size,
+    required bool isSubject,
     context,
   }) async {
-    // First create a folder
-    var name = videoName.split("/").last.split(".").first;
-    var id = await supabase.from("folders").select("id").eq("name", courseName);
-    var check = await supabase
-        .from("curces")
-        .select()
-        .eq("folder_id", id[0]["id"])
-        .eq("name", name)
-        .maybeSingle();
-
-    if (check != null) {
-      lunchAwesomDialoge(
-          DialogType.error,
-          "e",
-          getDeviceLocale() == "ar"
-              ? "الفيديو موجود بالفعل"
-              : "The video already exists",
-          context,
-          getWidth(context),
-          getHeight(context));
-    } else {
-      int len = pdfPaths.length + 1;
-      double percent = 0.0;
-      // Upload files
-      emit(ChangePercentage(percent: percent));
-      final videoUrl = await uploadFile(videoPath, id[0]["id"].toString(), 'video', name);
-      percent = (1 / len);
-      emit(ChangePercentage(percent: percent));
-      final pdfUrls = [];
-      for (var i = 0; i < pdfPaths.length; i++) {
-        var pdfUrl = await uploadFile(
-            pdfPaths[i].path, id[0]["id"].toString(), 'document${DateTime.now()}', name);
-        pdfUrls.add(pdfUrl);
-        percent = percent + (1 / len);
-        emit(ChangePercentage(percent: percent));
-      }
-
-      // Save course data
-      await supabase.from('curces').insert({
-        'folder_id': id[0]["id"],
-        'name': name,
-        'url': videoUrl,
-        "pdf_urls": pdfUrls,
-        'que': questions,
-        'choose': choices,
-        'ans': answers,
-        "watchers": []
-      });
-    }
-  }
-
-  uploadeVideo(XFile files, String ref, pdfFiles, questions, choices, answers,
-      context) async {
-    var refCheck = await FirebaseFirestore.instance
-        .collection("videos")
-        .doc(files.name)
-        .get();
-    await FirebaseFirestore.instance
-        .collection("Course_path")
-        .doc(ref.split("/").join("-"))
-        .set({"sold": "0"});
-    if (refCheck.exists) {
-      lunchAwesomDialoge(
-          DialogType.error,
-          "e",
-          getDeviceLocale() == "ar"
-              ? "الفيديو موجود مسبقاً"
-              : "The video already exists.",
-          context,
-          getWidth(context),
-          getHeight(context));
-    } else {
-      emit(ChangePercentage(percent: 0.0));
-
-      var bytes1 = 0.0;
-      var bytes2 = [];
-      for (var i = 0; i < pdfFiles.length; i++) {
-        bytes2.add(0.0);
-      }
-      var len = pdfFiles.length + 1;
-      File file = File(files.path);
-
-      if (await file.exists()) {
-        final uint8list = await VideoThumbnail.thumbnailData(
-          video: file.path,
-          imageFormat: ImageFormat.JPEG,
-          maxWidth: 128,
-          quality: 25,
-        );
-
-        var ref1 = FirebaseStorage.instance
-            .ref("$ref/${files.name}")
-            .child(files.name);
-        var ref6 = FirebaseStorage.instance
-            .ref("$ref/${files.name}")
-            .child("thumbnails.jpg");
-        var uploadTask = ref1.putFile(file);
-
-        uploadTask.snapshotEvents.listen(
-          (event) {
-            bytes1 = (event.bytesTransferred / event.totalBytes);
-            uodateValue(bytes1, [0.0], len);
-          },
-        );
-
-        await uploadTask;
-        await ref6.putData(uint8list);
-        final downloadUrlOfThumb = await ref6.getDownloadURL();
-        var ref3 = FirebaseStorage.instance.ref("$ref");
-        var folder = await ref3.list();
-
-        if (folder.items.isNotEmpty) {
-          await ref3.child("folder").delete();
+    try {
+      if ((locked || isTeacher || isFolder)) {
+        String? imageUrl;
+        if (imagePath.isNotEmpty && videoPath.isEmpty && pdfPaths.isEmpty) {
+          imageUrl = await uploadFile(imagePath, courseName, 1, 1);
         }
-        var downloadUrl = [];
-        var videoUrl = [];
+        var sub = await supabase
+            .from("folders")
+            .select()
+            .eq("id", parent_id)
+            .maybeSingle();
 
-        for (var i = 0; i < pdfFiles.length; i++) {
-          File pdfFile = File(pdfFiles[i].path);
-          if (await pdfFile.exists()) {
-            var ref2 = FirebaseStorage.instance
-                .ref("$ref/${files.name}")
-                .child(pdfFiles[i].name);
-
-            var uploadPdf = ref2.putFile(pdfFile);
-
-            uploadPdf.snapshotEvents.listen(
-              (event) {
-                bytes2[i] = (event.bytesTransferred / event.totalBytes);
-                uodateValue(bytes1, bytes2, len);
-              },
-            );
-
-            await uploadPdf;
-
-            downloadUrl.add(await ref2.getDownloadURL());
-
-            videoUrl.add(await ref1.getDownloadURL());
-          } else {}
+        String subValue = "";
+        if (sub != null &&
+            (sub["locked"] || sub["sub"].toString().isNotEmpty) &&
+            sub["sub"] != null) {
+          subValue =
+              sub["sub"] == "" ? parent_id.toString() : sub["sub"].toString();
         }
-
-        await FirebaseFirestore.instance
-            .collection("videos")
-            .doc("${files.name}")
-            .set({
-          "videoUrl": videoUrl[0],
-          "pdfUrl": downloadUrl,
-          "thumbUrl": downloadUrlOfThumb,
-          "qustions": questions,
-          "choices": choices,
-          "answers": answers,
-          "wathers": [],
+        await supabase.from("folders").insert({
+          "name": courseName,
+          "parent_id": parent_id,
+          "child_count": "0",
+          "image_url": imageUrl,
+          "is_teacher": isTeacher,
+          "locked": locked,
+          "price": price,
+          "is-subject": isSubject,
+          "sub": subValue,
         });
+        var count = await supabase.from("folders").select().eq("id", parent_id);
+        int intCount = int.parse(count[0]["child_count"]);
+
+        await supabase.from("folders").update(
+            {"child_count": (intCount + 1).toString()}).eq("id", parent_id);
+        var box = Hive.box(hiveBoxName);
+        box.put("per", 0.0);
+      } else if (videoPath.isNotEmpty ||
+          pdfPaths.isNotEmpty ||
+          questions.isNotEmpty) {
+        // ignore: prefer_typing_uninitialized_variables
+        var root;
+        // ignore: prefer_typing_uninitialized_variables
+        var subRoot;
+        // ignore: prefer_typing_uninitialized_variables
+        var id;
+        root = await supabase
+            .from("folders")
+            .select()
+            .eq("id", id ?? parent_id)
+            .maybeSingle();
+        while (root["parent_id"] != null) {
+          var folder = await supabase
+              .from("folders")
+              .select()
+              .eq("id", id ?? parent_id)
+              .maybeSingle();
+          id = folder!["parent_id"];
+          root = folder;
+          if (id == null) {
+            break;
+          }
+
+          subRoot = root;
+        }
+
+        var check = await supabase
+            .from("curces")
+            .select()
+            .eq("folder_id", parent_id)
+            .eq("name", courseName)
+            .maybeSingle();
+        var checkLocked =
+            await supabase.from("folders").select().eq("id", parent_id);
+        if (check != null) {
+          lunchAwesomDialoge(
+              DialogType.error,
+              "e",
+              getDeviceLocale() == "ar"
+                  ? "الملف موجود بالفعل"
+                  : "The file already exists",
+              context,
+              getWidth(context),
+              getHeight(context));
+        } else {
+          int len = pdfPaths.length + (videoPath.isNotEmpty ? 1 : 0) + 1;
+          double percent = 0.0;
+          // Upload files
+          // ignore: prefer_typing_uninitialized_variables
+          var videoUrl;
+          // ignore: prefer_typing_uninitialized_variables
+          var imageUrl;
+          if (videoPath.isNotEmpty) {
+            videoUrl =
+                await uploadFile(videoPath, parent_id.toString(), len, 1);
+          }
+
+          final pdfUrls = [];
+          for (var i = 0; i < pdfPaths.length; i++) {
+            var pdfUrl = await uploadFile(
+                pdfPaths[i].path, parent_id.toString(), len, i + 2);
+
+            pdfUrls.add(pdfUrl);
+          }
+          if (imagePath.isNotEmpty) {
+            imageUrl = await uploadFile(imagePath, courseName, len, len);
+          }
+
+          // Save course data
+          if (questions.isEmpty) {
+            questions = [];
+            answers = [];
+            choices = [];
+          }
+
+          var checkData = await supabase
+              .from("folders")
+              .select()
+              .eq("id", parent_id)
+              .maybeSingle();
+
+          while (checkData != null && !checkData["is-subject"]) {
+            checkData = await supabase
+                .from("folders")
+                .select()
+                .eq("id", checkData["parent_id"])
+                .maybeSingle();
+          }
+          var sub = await supabase
+              .from("folders")
+              .select()
+              .eq("id", parent_id)
+              .maybeSingle();
+          String subValue = "";
+          if (sub != null &&
+              (sub["locked"] || sub["sub"].toString().isNotEmpty) &&
+              sub["sub"] != null) {
+            subValue =
+                sub["sub"] == "" ? parent_id.toString() : sub["sub"].toString();
+          }
+        
+          await supabase.from('curces').insert({
+            'folder_id': parent_id,
+            'name': courseName.toString().trim(),
+            'url': videoUrl ?? "",
+            "pdf_urls": pdfUrls,
+            'que': questions,
+            'choose': choices,
+            'ans': answers,
+            "watchers": [],
+            "grade": root["name"],
+            "class": subRoot["name"],
+            "image_url": imageUrl,
+            "is_free": isFree,
+            "size": size,
+            "subject-folder": checkData!["id"],
+            "sub": subValue,
+          });
+
+          var count =
+              await supabase.from("folders").select().eq("id", parent_id);
+          int intCount = int.parse(count[0]["child_count"]);
+
+          await supabase.from("folders").update(
+              {"child_count": (intCount + 1).toString()}).eq("id", parent_id);
+          var box = Hive.box(hiveBoxName);
+          box.put("per", 0.0);
+        }
+      }
+    } catch (e) {
+      var box = Hive.box(hiveBoxName);
+      box.put("per", 0.0);
+      if (kDebugMode) {
+        print(e);
       }
     }
-  }
-
-  void uodateValue(double bytes1, bytes2, len) {
-    var newValue = bytes1 / len;
-    for (var i = 0; i < bytes2.length; i++) {
-      newValue = newValue + (bytes2[i] / len);
-    }
-    emit(ChangePercentage(percent: newValue));
   }
 }

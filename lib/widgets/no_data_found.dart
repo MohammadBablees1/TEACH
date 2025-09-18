@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
@@ -60,7 +61,11 @@ class _NoDataFoundState extends State<NoDataFound> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    AutoSizeText(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: 10,
+                      maxFontSize: 15,
                       getDeviceLocale() == "ar"
                           ? "المجلّد فارغ"
                           : "The folder is empty",

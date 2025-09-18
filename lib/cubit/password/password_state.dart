@@ -13,5 +13,16 @@ class VisiblePassword extends PasswordState {
 class FilePermisions extends PasswordState {
   var filePermision = false;
   var codePermesion = false;
-  FilePermisions({required this.filePermision, required this.codePermesion});
+  var watchPermition = false;
+  var editPermition = false;
+
+  var deletePermition = false;
+  var note = false;
+  FilePermisions(
+      {required this.filePermision,
+      required this.codePermesion,
+      required this.watchPermition,
+      required this.editPermition,
+      required this.deletePermition,
+      required this.note});
 }

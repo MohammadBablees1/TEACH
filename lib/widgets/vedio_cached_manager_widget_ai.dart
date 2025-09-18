@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:pod_player/pod_player.dart';
 import 'package:path_provider/path_provider.dart';
@@ -103,6 +104,8 @@ class _FixedCacheVideoPlayerState extends State<FixedCacheVideoPlayer> {
   }
 
   Future<void> _initializeOffline() async {
+    print(_cachedSegments);
+    print("+++++++++++++++++++");
     if (_cachedSegments.isEmpty) {
       throw Exception('No cached content available for offline playback');
     }
@@ -187,6 +190,8 @@ class _FixedCacheVideoPlayerState extends State<FixedCacheVideoPlayer> {
           if (mounted) {
             setState(() {
               _cachedSegments.add(segmentFile);
+              print(_cachedSegments);
+              print("+++++++++++++++++++");
               _lastCachedSecond = currentSecond;
               _hasCachedContent = true;
               _cachingProgress = _lastCachedSecond /
@@ -236,9 +241,14 @@ class _FixedCacheVideoPlayerState extends State<FixedCacheVideoPlayer> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_isOffline
-              ? 'Offline: ${error.toString()}'
-              : 'Error: ${error.toString()}'),
+          content: AutoSizeText(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              minFontSize: 10,
+              maxFontSize: 15,
+              _isOffline
+                  ? 'Offline: ${error.toString()}'
+                  : 'Error: ${error.toString()}'),
           duration: Duration(seconds: 3),
         ),
       );
@@ -303,7 +313,11 @@ class _FixedCacheVideoPlayerState extends State<FixedCacheVideoPlayer> {
         children: [
           Icon(Icons.signal_wifi_off, size: 48, color: Colors.grey),
           SizedBox(height: 16),
-          Text(
+          AutoSizeText(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            minFontSize: 10,
+            maxFontSize: 15,
             _hasCachedContent
                 ? 'Cached content available (${_lastCachedSecond}s)'
                 : 'No cached content available',
@@ -313,10 +327,19 @@ class _FixedCacheVideoPlayerState extends State<FixedCacheVideoPlayer> {
           if (_hasCachedContent)
             ElevatedButton(
               onPressed: () => _initializeOffline(),
-              child: Text('Play Cached Content'),
+              child: AutoSizeText(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  minFontSize: 10,
+                  maxFontSize: 15,
+                  'Play Cached Content'),
             ),
           if (!_hasCachedContent)
-            Text(
+            AutoSizeText(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              minFontSize: 10,
+              maxFontSize: 15,
               'Please play this video online first to cache it',
               style: Theme.of(context).textTheme.bodyMedium,
             ),

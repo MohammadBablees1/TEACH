@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -66,8 +67,10 @@ class _AddChoiceState extends State<AddChoice> {
                       ));
                     } else {
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (context) =>
-                            UploadVideo(folder: widget.main[1]),
+                        builder: (context) => UploadVideo(
+                          folder: widget.main[1],
+                          parent_id: widget.main[2],
+                        ),
                       ));
                     }
                   },
@@ -95,7 +98,11 @@ class _AddChoiceState extends State<AddChoice> {
                           width: getWidth(context) * .1,
                           height: getWidth(context) * .1,
                         ),
-                        Text(
+                        AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           widget.main[0]
                               ? getDeviceLocale() == "ar"
                                   ? Translation()
@@ -213,34 +220,37 @@ class _AddChoiceState extends State<AddChoice> {
                                                   context
                                                       .read<LoadingPdfCubit>()
                                                       .loadingPdf(true);
-                                              var check = await  _repo.createFolder(name,context, parentId: widget.main[2]);
-                                                    if(check){
-                                                           context
-                                                      .read<LoadingPdfCubit>()
-                                                      .loadingPdf(false);
-                                                  Navigator.pop(context);
-                                                  if (!widget.main[0]) {
+                                                  var check =
+                                                      await _repo.createFolder(
+                                                          name, context,
+                                                          parentId:
+                                                              widget.main[2]);
+                                                  if (check) {
                                                     context
-                                                        .read<
-                                                            RefreshFolderCubit>()
-                                                        .refreshPage();
-                                                  }else{
-                                                     context
-                                                      .read<LoadingPdfCubit>()
-                                                      .loadingPdf(false);
-                                                  }
-                                                    }else{
-                                                        context
-                                                      .read<LoadingPdfCubit>()
-                                                      .loadingPdf(false);
+                                                        .read<LoadingPdfCubit>()
+                                                        .loadingPdf(false);
+                                                    Navigator.pop(context);
+                                                    if (!widget.main[0]) {
+                                                      context
+                                                          .read<
+                                                              RefreshFolderCubit>()
+                                                          .refreshPage();
+                                                    } else {
+                                                      context
+                                                          .read<
+                                                              LoadingPdfCubit>()
+                                                          .loadingPdf(false);
                                                     }
-                                             
+                                                  } else {
+                                                    context
+                                                        .read<LoadingPdfCubit>()
+                                                        .loadingPdf(false);
+                                                  }
                                                 } catch (e) {
-                                                   context
+                                                  context
                                                       .read<LoadingPdfCubit>()
                                                       .loadingPdf(false);
 
-                                                 
                                                   context
                                                       .read<LoadingPdfCubit>()
                                                       .loadingPdf(false);
@@ -264,7 +274,12 @@ class _AddChoiceState extends State<AddChoice> {
                                                           color: Colors.white,
                                                         ),
                                                       )
-                                                    : Text(
+                                                    : AutoSizeText(
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        minFontSize: 10,
+                                                        maxFontSize: 15,
                                                         getDeviceLocale() ==
                                                                 "ar"
                                                             ? Translation()
@@ -279,7 +294,12 @@ class _AddChoiceState extends State<AddChoice> {
                                                           color: Colors.white,
                                                         ),
                                                       )
-                                                : Text(
+                                                : AutoSizeText(
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    minFontSize: 10,
+                                                    maxFontSize: 15,
                                                     getDeviceLocale() == "ar"
                                                         ? Translation()
                                                                     .translateMe[
@@ -311,7 +331,11 @@ class _AddChoiceState extends State<AddChoice> {
                                                   Navigator.pop(context);
                                                 }
                                               },
-                                              child: Text(
+                                              child: AutoSizeText(
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                minFontSize: 10,
+                                                maxFontSize: 15,
                                                 getDeviceLocale() == "ar"
                                                     ? "إلغاء"
                                                     : "Cancel",
@@ -353,7 +377,11 @@ class _AddChoiceState extends State<AddChoice> {
                           width: getWidth(context) * 1 / 10,
                           height: getWidth(context) * 1 / 10,
                         ),
-                        Text(
+                        AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           getDeviceLocale() == "ar"
                               ? !school.contains(widget.main[1]) &&
                                       widget.main[1]

@@ -50,20 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD-h8bKndJ59xB01CLwGeczhFAqPtPy2Tc',
-    appId: '1:577055499405:android:d4d908d714ae90cd3b2ec4',
-    messagingSenderId: '577055499405',
-    projectId: 'afack-pro',
-    storageBucket: 'afack-pro.appspot.com',
+    apiKey: 'AIzaSyCIvifvlHRn_TojjgFyOQsVYb1YT_DTlZ0',
+    appId: '1:1051650281425:android:a8a1685942afcd5ed59af0',
+    messagingSenderId: '1051650281425',
+    projectId: 'al-multka-af65e',
+    storageBucket: 'al-multka-af65e.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDcl69hhLSWrcvWwi5wFtoL7e1g2gEPFAs',
-    appId: '1:577055499405:ios:1603c6b8a528b02f3b2ec4',
-    messagingSenderId: '577055499405',
-    projectId: 'afack-pro',
-    storageBucket: 'afack-pro.appspot.com',
+    apiKey: 'AIzaSyCsQV6gDqKihcxlE-bTKZTiqg4eet1dmK4',
+    appId: '1:1051650281425:ios:934d9bf9900e2d66d59af0',
+    messagingSenderId: '1051650281425',
+    projectId: 'al-multka-af65e',
+    storageBucket: 'al-multka-af65e.firebasestorage.app',
     iosBundleId: 'com.example.teach',
   );
-
 }

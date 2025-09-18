@@ -1,5 +1,6 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,10 +19,10 @@ import 'package:teach/screens/pages/record_codes.dart';
 import 'package:teach/screens/pages/update_password.dart';
 
 class Profile extends StatefulWidget {
-    var home = true, len = 0;
-    var currentIndex = 0;
-    var name = "", loading = false;
-    var isEditing = false;
+  var home = true, len = 0;
+  var currentIndex = 0;
+  var name = "", loading = false;
+  var isEditing = false;
   var currentUser = "";
   late TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
@@ -63,7 +64,11 @@ class _ProfileState extends State<Profile> {
               padding: const EdgeInsets.all(8.0),
               child: Container(
                 alignment: AlignmentDirectional.topStart,
-                child: Text(
+                child: AutoSizeText(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  minFontSize: 10,
+                  maxFontSize: 15,
                   getDeviceLocale() == "ar" ? "بياناتي" : "My account",
                   style: TextStyle(
                     fontSize: 30,
@@ -93,7 +98,11 @@ class _ProfileState extends State<Profile> {
                               ? Colors.white
                               : const Color.fromARGB(255, 11, 85, 145)),
                       decoration: InputDecoration(
-                        prefix: Text(
+                        prefix: AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           getDeviceLocale() == "ar"
                               ? "اسم المستخدم : "
                               : "User name : ",
@@ -133,9 +142,14 @@ class _ProfileState extends State<Profile> {
                               ? Colors.white
                               : const Color.fromARGB(255, 11, 85, 145)),
                       decoration: InputDecoration(
-                        prefix: Text(getDeviceLocale() == "ar"
-                            ? " رقم الهاتف : "
-                            : " Phone number : "),
+                        prefix: AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
+                            getDeviceLocale() == "ar"
+                                ? " رقم الهاتف : "
+                                : " Phone number : "),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                             borderSide: BorderSide(
@@ -160,36 +174,41 @@ class _ProfileState extends State<Profile> {
                       ),
                     ),
                   ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: TextField(
-                        controller: widget.emailController,
-                        readOnly: true,
-                        style: TextStyle(
-                            color: mode
-                                ? Colors.white
-                                : const Color.fromARGB(255, 11, 85, 145)),
-                        decoration: InputDecoration(
-                          prefix: Text(getDeviceLocale() == "ar"
-                              ? "البريد الإلكتروني: "
-                              : "Email : "),
-                          enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide(
-                                  width: 1,
-                                  color: mode
-                                      ? nightBar["orange"]
-                                      : const Color.fromARGB(255, 11, 85, 145))),
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide(
-                                  width: 1.5,
-                                  color: mode
-                                      ? nightBar["orange"]
-                                      : const Color.fromARGB(255, 11, 85, 145))),
-                        ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: TextField(
+                      controller: widget.emailController,
+                      readOnly: true,
+                      style: TextStyle(
+                          color: mode
+                              ? Colors.white
+                              : const Color.fromARGB(255, 11, 85, 145)),
+                      decoration: InputDecoration(
+                        prefix: AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
+                            getDeviceLocale() == "ar"
+                                ? "البريد الإلكتروني: "
+                                : "Email : "),
+                        enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(
+                                width: 1,
+                                color: mode
+                                    ? nightBar["orange"]
+                                    : const Color.fromARGB(255, 11, 85, 145))),
+                        focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide(
+                                width: 1.5,
+                                color: mode
+                                    ? nightBar["orange"]
+                                    : const Color.fromARGB(255, 11, 85, 145))),
                       ),
                     ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
@@ -200,9 +219,14 @@ class _ProfileState extends State<Profile> {
                               ? Colors.white
                               : const Color.fromARGB(255, 11, 85, 145)),
                       decoration: InputDecoration(
-                        prefix: Text(getDeviceLocale() == "ar"
-                            ? "نوع الحساب : "
-                            : "Account type : "),
+                        prefix: AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
+                            getDeviceLocale() == "ar"
+                                ? "نوع الحساب : "
+                                : "Account type : "),
                         enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                             borderSide: BorderSide(
@@ -254,8 +278,10 @@ class _ProfileState extends State<Profile> {
                                   context
                                       .read<LunchLoadingCubit>()
                                       .lunchEditLoading(false);
-                                  print("+++++++++++++++");
-                                  print(e.toString());
+                                 
+                                  if (kDebugMode) {
+                                    print(e.toString());
+                                  }
                                 }
                                 // await currentUser
                                 //     .verifyBeforeUpdateEmail(widget.emailController.text);
@@ -293,13 +319,21 @@ class _ProfileState extends State<Profile> {
                                         ),
                                       ),
                                     )
-                                  : Text(
+                                  : AutoSizeText(
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      minFontSize: 10,
+                                      maxFontSize: 15,
                                       getDeviceLocale() == "ar"
                                           ? "تعديل"
                                           : "Edite Account",
                                       style: TextStyle(color: Colors.white),
                                     )
-                              : Text(
+                              : AutoSizeText(
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  minFontSize: 10,
+                                  maxFontSize: 15,
                                   getDeviceLocale() == "ar"
                                       ? "تعديل"
                                       : "Edite Account",
@@ -315,14 +349,18 @@ class _ProfileState extends State<Profile> {
                       }
                     },
                   ),
-                  checkPermision() && checkCodePermision()
+                  checkCodePermision()
                       ? Column(
                           children: [
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Container(
                                 alignment: AlignmentDirectional.topStart,
-                                child: Text(
+                                child: AutoSizeText(
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    minFontSize: 10,
+                                    maxFontSize: 15,
                                     getDeviceLocale() == "ar"
                                         ? "توليد الأكواد"
                                         : "Generate codes",
@@ -333,7 +371,11 @@ class _ProfileState extends State<Profile> {
                               padding: const EdgeInsets.all(8.0),
                               child: Container(
                                 alignment: AlignmentDirectional.topStart,
-                                child: Text(
+                                child: AutoSizeText(
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    minFontSize: 10,
+                                    maxFontSize: 15,
                                     getDeviceLocale() == "ar"
                                         ? "يمكنك توليد الأكواد للتصريح للمستخدمين بالدخول إلى بعض الكورسات التي يطلبونها و كما يمكن إنشاء أكواد للتصريح لبعض المستخدمين لنشر وتحميل الكورسات و إنشاء الأكواد"
                                         : "You can generate codes to authorize users to enter some courses they request, and you can also create codes to authorize some users to publish and download courses and create codes.",
@@ -351,7 +393,11 @@ class _ProfileState extends State<Profile> {
                                       ),
                                     );
                                   },
-                                  child: Text(
+                                  child: AutoSizeText(
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    minFontSize: 10,
+                                    maxFontSize: 15,
                                     getDeviceLocale() == "ar"
                                         ? "توليد الأكواد"
                                         : "Generate codes",
@@ -370,7 +416,11 @@ class _ProfileState extends State<Profile> {
                                       ),
                                     );
                                   },
-                                  child: Text(
+                                  child: AutoSizeText(
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    minFontSize: 10,
+                                    maxFontSize: 15,
                                     getDeviceLocale() == "ar"
                                         ? "سجل الأكواد"
                                         : "Record codes",
@@ -386,57 +436,15 @@ class _ProfileState extends State<Profile> {
                           ],
                         )
                       : Container(),
-                  // : Column(
-                  //     children: [
-                  //       Padding(
-                  //         padding: const EdgeInsets.all(8.0),
-                  //         child: Container(
-                  //           alignment: AlignmentDirectional.topStart,
-                  //           child: Text(
-                  //               getDeviceLocale() == "ar"
-                  //                   ? "شراء كورس"
-                  //                   : "Buy a course",
-                  //               style: TextStyle(fontSize: 25)),
-                  //         ),
-                  //       ),
-                  //       Padding(
-                  //         padding: const EdgeInsets.all(8.0),
-                  //         child: Container(
-                  //           alignment: AlignmentDirectional.topStart,
-                  //           child: Text(
-                  //               getDeviceLocale() == "ar"
-                  //                   ? "يمكنك شراء أي كورس ليتيح لك مشاهدة المزيد من الفيديوهات التعليمية"
-                  //                   : "You can purchase any course to allow you to watch more educational videos.",
-                  //               style: TextStyle(fontSize: 15)),
-                  //         ),
-                  //       ),
-                  //       ElevatedButton(
-                  //         onPressed: () async {
-                  //           var code = await Navigator.of(context)
-                  //               .push(MaterialPageRoute(
-                  //             builder: (context) => BarCodeScanner(
-                  //               userEmail1: "",
-                  //               userPassword1: "",
-                  //               check: false,
-                  //             ),
-                  //           ));
-                  //         },
-                  //         child: Text(
-                  //           getDeviceLocale() == "ar" ? "شراء" : "buying",
-                  //           style: TextStyle(color: Colors.white),
-                  //         ),
-                  //         style: ElevatedButton.styleFrom(
-                  //             side: BorderSide(
-                  //           width: .5,
-                  //         )),
-                  //       ),
-                  //     ],
-                  //   ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       alignment: AlignmentDirectional.topStart,
-                      child: Text(
+                      child: AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           getDeviceLocale() == "ar"
                               ? "تسجيل الخروج"
                               : "Sign out",
@@ -449,7 +457,11 @@ class _ProfileState extends State<Profile> {
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       alignment: AlignmentDirectional.topStart,
-                      child: Text(
+                      child: AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           getDeviceLocale() == "ar"
                               ? "يمكنك تسجيل الخروج من حسابك في أي وقت . بمجرّد قيامك بذلك لن تتمكّن من الدخول إلى التطبيق حتى تسجل الدخول مرة أخرى أو تنشئ حساب جديد"
                               : "You can sign out of your account at any time. Once you do, you will not be able to access the app until you sign in again or create a new account.",
@@ -472,7 +484,11 @@ class _ProfileState extends State<Profile> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
                                   children: [
-                                    Text(
+                                    AutoSizeText(
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      minFontSize: 10,
+                                      maxFontSize: 15,
                                       getDeviceLocale() == "ar"
                                           ? "هل أنت متأكد ؟"
                                           : "Are you sure?",
@@ -534,7 +550,11 @@ class _ProfileState extends State<Profile> {
                                                   getHeight(context));
                                             }
                                           },
-                                          child: Text(
+                                          child: AutoSizeText(
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            minFontSize: 10,
+                                            maxFontSize: 15,
                                             getDeviceLocale() == "ar"
                                                 ? "نعم"
                                                 : "Yes",
@@ -546,7 +566,11 @@ class _ProfileState extends State<Profile> {
                                             onPressed: () {
                                               Navigator.pop(context);
                                             },
-                                            child: Text(
+                                            child: AutoSizeText(
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              minFontSize: 10,
+                                              maxFontSize: 15,
                                               getDeviceLocale() == "ar"
                                                   ? "إلغاء"
                                                   : "Cancel",
@@ -561,7 +585,11 @@ class _ProfileState extends State<Profile> {
                             ),
                           );
                         },
-                        child: Text(
+                        child: AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           getDeviceLocale() == "ar"
                               ? "تسجيل الخروج"
                               : "Sign out",
@@ -579,7 +607,11 @@ class _ProfileState extends State<Profile> {
                           padding: const EdgeInsets.all(8.0),
                           child: Container(
                             alignment: AlignmentDirectional.topStart,
-                            child: Text(
+                            child: AutoSizeText(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 10,
+                                maxFontSize: 15,
                                 getDeviceLocale() == "ar"
                                     ? "تغيير كلمة السر"
                                     : "Change password",
@@ -592,7 +624,11 @@ class _ProfileState extends State<Profile> {
                           padding: const EdgeInsets.all(8.0),
                           child: Container(
                             alignment: AlignmentDirectional.topStart,
-                            child: Text(
+                            child: AutoSizeText(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 10,
+                                maxFontSize: 15,
                                 getDeviceLocale() == "ar"
                                     ? "يمكنك تغيير كلمة السر إذا لاحظت شبهات في حسابك. يرجى تغيير كلمة السر للحفاظ على الحساب"
                                     : "You can change your password if you notice any suspicious activity in your account. Please change your password to keep your account safe.",
@@ -609,7 +645,11 @@ class _ProfileState extends State<Profile> {
                               ),
                             );
                           },
-                          child: Text(
+                          child: AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             getDeviceLocale() == "ar"
                                 ? "تغيير كلمة السر"
                                 : "Change password",
@@ -625,7 +665,11 @@ class _ProfileState extends State<Profile> {
                     padding: const EdgeInsets.all(8.0),
                     child: Container(
                       alignment: AlignmentDirectional.topStart,
-                      child: Text(
+                      child: AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           getDeviceLocale() == "ar"
                               ? "إعدادت أخرى"
                               : "Other settings",
@@ -645,7 +689,11 @@ class _ProfileState extends State<Profile> {
                         await initUserInfo();
                       });
                     },
-                    title: Text(
+                    title: AutoSizeText(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: 10,
+                      maxFontSize: 15,
                       getDeviceLocale() == "ar" ? "الوضع الليلي" : "Night mode",
                       style: TextStyle(),
                     ),
@@ -671,7 +719,11 @@ class _ProfileState extends State<Profile> {
                             .updateLan(language == "ar" ? "false" : "true");
                       }
                     },
-                    title: Text(
+                    title: AutoSizeText(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: 10,
+                      maxFontSize: 15,
                       getDeviceLocale() == "ar"
                           ? "اللغة الإنكليزية"
                           : "English language",
@@ -694,11 +746,11 @@ class _ProfileState extends State<Profile> {
 
     var checkInternet = await checkConnection();
 
-    if (box.get("info") == null && checkInternet) {
+    if (box.get("info") == null && checkInternet && info != null) {
       var data = await supabase
           .from("current_user")
           .select()
-          .eq("email", info!.email.toString())
+          .eq("email", info.email.toString())
           .maybeSingle();
 
       var checkManagerInstance = await supabase

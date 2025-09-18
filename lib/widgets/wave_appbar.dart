@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
@@ -50,7 +51,11 @@ class CustomWaveAppBar extends StatelessWidget {
                           onPressed: () => Scaffold.of(context).openDrawer(),
                         ),
                         Expanded(
-                          child: Text(
+                          child: AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             getDeviceLocale() == "ar"
                                 ? 'أهلاً بك $username'
                                 : "Welcom  $username",
@@ -80,7 +85,9 @@ class CustomWaveAppBar extends StatelessWidget {
                             color: mode
                                 ? nightBar["orange"]
                                 : Colors.blue.shade700),
-                        hintText: 'ابحث هنا...',
+                        hintText: getDeviceLocale() == "ar"
+                            ? 'ابحث هنا...'
+                            : "Type to search...",
                         hintStyle: TextStyle(
                             color: mode
                                 ? nightBar["orange"].withOpacity(.5)

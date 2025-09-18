@@ -13,4 +13,25 @@ class LunchLoadingCubit extends Cubit<LunchLoadingState> {
   lunchEditLoading(loading) {
     emit(EditLoading(loading: loading));
   }
+
+  uploadCode(isLoading) {
+    emit(UploadCodeLoading(loading: isLoading));
+  }
+
+  getCodeLoding(loading, index) {
+    emit(GetCodeLoading(loading: loading, index: index));
+    
+  }
+
+  generatePdf(loading, index) {
+    emit(GeneratePdf(loading: loading, index: index));
+    
+  }
+  deleteAllCodesFromUser(loading, index) {
+    emit(DeleteAllCodesFromUser(loading: loading, index: index));
+  }
+  sendNotification(loading) {
+    emit(SendNotification(loading: loading));
+    
+  }
 }

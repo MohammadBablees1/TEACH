@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:teach/data/consts/app_const.dart';
 
 class WaitingScreen extends StatelessWidget {
   const WaitingScreen({super.key});
@@ -10,7 +11,7 @@ class WaitingScreen extends StatelessWidget {
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Center(child: Image.asset("images/loading.gif")),
+          Center(child: myImageAsset("images/loading.gif", context)),
         ],
       )),
     );

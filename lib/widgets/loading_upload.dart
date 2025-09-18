@@ -38,7 +38,7 @@ class _LoadingUploadState extends State<LoadingUpload> {
                   animation: true,
                   curve: Curves.easeInOut,
                   center: Center(
-                    child: Image.asset("images/loading.gif"),
+                    child: myImageAsset("images/loading.gif", context),
                   ),
                 ),
               ),

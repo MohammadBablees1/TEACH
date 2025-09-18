@@ -1,9 +1,8 @@
-import 'dart:math';
+import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gotrue/src/types/auth_response.dart';
@@ -13,7 +12,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:teach/cubit/changeOpacity/change_opacity_cubit.dart';
 import 'package:teach/cubit/change_code/code_changed_cubit.dart';
 import 'package:teach/cubit/password/password_cubit.dart';
-import 'package:teach/cubit/teachCubit/teach_cubit.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
 import 'package:teach/data/modules/translate_consts.dart';
@@ -21,6 +19,7 @@ import 'package:teach/data/widgets/lunch.dart';
 import 'package:teach/main.dart';
 import 'package:teach/screens/main_screen.dart';
 import 'package:teach/screens/pages/bar_code_scanner.dart';
+import 'package:teach/screens/pages/reset_password.dart';
 import 'package:teach/screens/pages/student_main_screen.dart';
 
 class SignUp extends StatefulWidget {
@@ -31,10 +30,12 @@ class SignUp extends StatefulWidget {
   var codeController = TextEditingController();
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
+  var universityNumberController = TextEditingController();
   SignUp(
       {required this.emailController,
       required this.passwordController,
-      required this.codeController});
+      required this.codeController,
+      required this.universityNumberController});
   @override
   State<SignUp> createState() => _SignUpState();
 }
@@ -47,7 +48,11 @@ class _SignUpState extends State<SignUp> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text(
+        title: AutoSizeText(
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          minFontSize: 10,
+          maxFontSize: 15,
           getDeviceLocale() == "ar"
               ? Translation().translateMe["Arabic"]!["Log_in"]
               : Translation().translateMe["English"]!["Log_in"],
@@ -64,7 +69,7 @@ class _SignUpState extends State<SignUp> {
             icon: Icon(Icons.arrow_back_ios)),
       ),
       body: PopScope(
-        canPop: false,
+        canPop: true,
         child: SafeArea(
             child: SingleChildScrollView(
           child: Form(
@@ -104,6 +109,43 @@ class _SignUpState extends State<SignUp> {
                       hintStyle: TextStyle(),
                       prefixIcon: Icon(
                         Icons.person,
+                        color: dayBar["blue2"],
+                      ),
+                    ),
+                    style: TextStyle(color: dayBar["blue"]),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    validator: (value) {
+                      return phoneValidator(value!);
+                    },
+                    controller: widget.universityNumberController,
+                    keyboardType: TextInputType.number,
+                    cursorColor: dayBar["blue"],
+                    onChanged: (name) {
+                      widget.universityNumberController.text = name;
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide:
+                              BorderSide(width: .5, color: dayBar["blue"])),
+                      enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide:
+                              BorderSide(width: .5, color: dayBar["blue"])),
+                      focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide:
+                              BorderSide(width: 1, color: dayBar["blue"])),
+                      hintText: getDeviceLocale() == "ar"
+                          ? "اكتب رقمك الجامعي هنا..."
+                          : "Write your university number here...",
+                      hintStyle: TextStyle(),
+                      prefixIcon: Icon(
+                        Icons.numbers,
                         color: dayBar["blue2"],
                       ),
                     ),
@@ -168,9 +210,14 @@ class _SignUpState extends State<SignUp> {
                       children: [
                         CheckboxListTile(
                             activeColor: Colors.blue,
-                            title: Text(getDeviceLocale() == "ar"
-                                ? "لدي كود تصريح دخول"
-                                : "I have an entry permit code."),
+                            title: AutoSizeText(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 10,
+                                maxFontSize: 15,
+                                getDeviceLocale() == "ar"
+                                    ? "لدي كود تصريح دخول"
+                                    : "I have an entry permit code."),
                             value: state is ChangeOpacity
                                 ? state.opacity == 1.0
                                 : false,
@@ -185,139 +232,180 @@ class _SignUpState extends State<SignUp> {
                                     .changeOpacity(0.0);
                               }
                             }),
-                        Opacity(
-                          opacity: state is ChangeOpacity ? state.opacity : 0,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child:
-                                BlocBuilder<CodeChangedCubit, CodeChangedState>(
-                              builder: (context, state) {
-                                if (state is ChangeCode) {
-                                  return TextFormField(
-                                    controller: widget.codeController,
-                                    keyboardType: TextInputType.name,
-                                    onChanged: (code) {
-                                      widget.userCode = code;
-                                    },
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          borderSide: BorderSide(
-                                              width: .5,
-                                              color: dayBar["blue"])),
-                                      enabledBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          borderSide: BorderSide(
-                                              width: .5,
-                                              color: dayBar["blue"])),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          borderSide: BorderSide(
-                                              width: 1, color: dayBar["blue"])),
-                                      hintText: getDeviceLocale() == "ar"
-                                          ? Translation()
-                                              .translateMe["Arabic"]!["code_r"]
-                                          : Translation().translateMe[
-                                              "English"]!["code_r"],
-                                      hintStyle: TextStyle(),
-                                      prefixIcon: IconButton(
-                                        onPressed: () async {
-                                          var code = await Navigator.of(context)
-                                              .push(MaterialPageRoute(
-                                            builder: (context) =>
-                                                BarCodeScanner(
-                                              userEmail1: userEmail,
-                                              userPassword1: userPassword,
-                                              check: true,
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: state is ChangeOpacity && state.opacity > 0
+                                ? BlocBuilder<CodeChangedCubit,
+                                    CodeChangedState>(
+                                    builder: (context, state) {
+                                      if (state is ChangeCode) {
+                                        return TextFormField(
+                                          controller: widget.codeController,
+                                          keyboardType: TextInputType.name,
+                                          onChanged: (code) {
+                                            widget.userCode = code;
+                                          },
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                borderSide: BorderSide(
+                                                    width: .5,
+                                                    color: dayBar["blue"])),
+                                            enabledBorder: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                borderSide: BorderSide(
+                                                    width: .5,
+                                                    color: dayBar["blue"])),
+                                            focusedBorder: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                borderSide: BorderSide(
+                                                    width: 1,
+                                                    color: dayBar["blue"])),
+                                            hintText: getDeviceLocale() == "ar"
+                                                ? Translation().translateMe[
+                                                    "Arabic"]!["code_r"]
+                                                : Translation().translateMe[
+                                                    "English"]!["code_r"],
+                                            hintStyle: TextStyle(),
+                                            prefixIcon: IconButton(
+                                              onPressed: () async {},
+                                              icon: Icon(
+                                                Icons.code,
+                                                color: dayBar["blue2"],
+                                              ),
                                             ),
-                                          ));
-                                          context
-                                              .read<CodeChangedCubit>()
-                                              .changeCode(code);
-                                        },
-                                        icon: Icon(
-                                          Icons.code,
-                                          color: dayBar["blue2"],
-                                        ),
-                                      ),
-                                    ),
-                                    style: TextStyle(color: dayBar["blue"]),
-                                  );
-                                } else {
-                                  return TextFormField(
-                                    controller: widget.codeController,
-                                    keyboardType: TextInputType.name,
-                                    onChanged: (code) {
-                                      widget.userCode = code;
-                                    },
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          borderSide: BorderSide(
-                                              width: .5,
-                                              color: dayBar["blue"])),
-                                      enabledBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          borderSide: BorderSide(
-                                              width: .5,
-                                              color: dayBar["blue"])),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                          borderSide: BorderSide(
-                                              width: 1, color: dayBar["blue"])),
-                                      hintText: getDeviceLocale() == "ar"
-                                          ? Translation()
-                                              .translateMe["Arabic"]!["code_r"]
-                                          : Translation().translateMe[
-                                              "English"]!["code_r"],
-                                      hintStyle: TextStyle(),
-                                      prefixIcon: IconButton(
-                                        onPressed: () async {
-                                          var code = await Navigator.of(context)
-                                              .push(MaterialPageRoute(
-                                            builder: (context) =>
-                                                BarCodeScanner(
-                                              userEmail1: userEmail,
-                                              userPassword1: userPassword,
-                                              check: true,
+                                          ),
+                                          style:
+                                              TextStyle(color: dayBar["blue"]),
+                                        );
+                                      } else {
+                                        return Column(
+                                          children: [
+                                            TextFormField(
+                                              controller: widget.codeController,
+                                              keyboardType: TextInputType.name,
+                                              onChanged: (code) {
+                                                widget.userCode = code;
+                                              },
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
+                                                    borderSide: BorderSide(
+                                                        width: .5,
+                                                        color: dayBar["blue"])),
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20),
+                                                        borderSide: BorderSide(
+                                                            width: .5,
+                                                            color: dayBar[
+                                                                "blue"])),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20),
+                                                        borderSide: BorderSide(
+                                                            width: 1,
+                                                            color: dayBar[
+                                                                "blue"])),
+                                                hintText: getDeviceLocale() ==
+                                                        "ar"
+                                                    ? Translation().translateMe[
+                                                        "Arabic"]!["code_r"]
+                                                    : Translation().translateMe[
+                                                        "English"]!["code_r"],
+                                                hintStyle: TextStyle(),
+                                                prefixIcon: Icon(
+                                                  Icons.code,
+                                                  color: dayBar["blue2"],
+                                                ),
+                                              ),
+                                              style: TextStyle(
+                                                  color: dayBar["blue"]),
                                             ),
-                                          ));
-                                          widget.codeController.text = code;
-                                          context
-                                              .read<CodeChangedCubit>()
-                                              .changeCode(code);
-                                        },
-                                        icon: Icon(
-                                          Icons.code,
-                                          color: dayBar["blue2"],
-                                        ),
-                                      ),
-                                    ),
-                                    style: TextStyle(color: dayBar["blue"]),
-                                  );
-                                }
-                              },
-                            ),
+                                            ElevatedButton(
+                                                onPressed: () async {
+                                                  var code = await Navigator.of(
+                                                          context)
+                                                      .push(MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        BarCodeScanner(
+                                                      userEmail1: userEmail,
+                                                      userPassword1:
+                                                          userPassword,
+                                                      universityNumber: widget
+                                                          .universityNumberController,
+                                                      check: true,
+                                                    ),
+                                                  ));
+                                                  widget.codeController.text =
+                                                      code;
+                                                  context
+                                                      .read<CodeChangedCubit>()
+                                                      .changeCode(code);
+                                                },
+                                                child: AutoSizeText(
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  minFontSize: 10,
+                                                  maxFontSize: 15,
+                                                  getDeviceLocale() == "ar"
+                                                      ? "أو امسح الكود من هنا"
+                                                      : "Or scan the code here",
+                                                  style: TextStyle(
+                                                      color: Colors.white),
+                                                ))
+                                          ],
+                                        );
+                                      }
+                                    },
+                                  )
+                                : const SizedBox.shrink(),
                           ),
                         ),
                       ],
                     );
                   },
                 ),
+                TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ResetPassword(),
+                          ));
+                    },
+                    child: AutoSizeText(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: 10,
+                      maxFontSize: 15,
+                      getDeviceLocale() == "ar"
+                          ? "نسيت كلمة السر"
+                          : "Forgot your password",
+                      style: TextStyle(color: dayBar["blue2"]),
+                    )),
                 ElevatedButton(
                     onPressed: () async {
                       if (globalKey.currentState!.validate()) {
+                     
                         if (widget.codeController.text.isEmpty) {
                           try {
                             setState(() {
                               widget.is_loading = true;
                             });
+
                             late AuthResponse user;
                             try {
                               user = await supabase.auth.signInWithPassword(
@@ -326,6 +414,9 @@ class _SignUpState extends State<SignUp> {
                               );
                               // Success case
                             } catch (error) {
+                              if (kDebugMode) {
+                                print(error);
+                              }
                               if (error is AuthException) {
                                 setState(() {
                                   widget.is_loading = false;
@@ -393,7 +484,6 @@ class _SignUpState extends State<SignUp> {
                                   getHeight(context),
                                 );
                               }
-                              return null;
                             }
                             var email = user.user!.email;
                             var mainManager = await supabase
@@ -402,10 +492,16 @@ class _SignUpState extends State<SignUp> {
                                 .eq("id", 1)
                                 .maybeSingle();
 
-                            if (userEmail == mainManager!["email"]) {
+                            if (userEmail == mainManager!["email"] &&
+                                widget.universityNumberController.text.trim() ==
+                                    "0000") {
                               var box = Hive.box(hiveBoxName);
 
                               box.put(isMainManager, true);
+                              var mainManager =
+                                  await supabase.from("main_manager").select();
+                              box.put("Mname", mainManager[0]["name"]);
+                              //await initUserInfo();
                             }
                             var box = Hive.box(hiveBoxName);
 
@@ -416,6 +512,10 @@ class _SignUpState extends State<SignUp> {
                                   .from('current_user')
                                   .select()
                                   .eq('id', user.user!.id)
+                                  .eq(
+                                      "university_number",
+                                      widget.universityNumberController.text
+                                          .trim())
                                   .maybeSingle();
 
                               if (userData != null) {
@@ -435,12 +535,13 @@ class _SignUpState extends State<SignUp> {
                                     widget.is_loading = false;
                                   });
                                   box.put("student_name", userData["name"]);
-                                  Navigator.pushReplacement(
+                                  Navigator.pushAndRemoveUntil(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             StudentMainScreen(),
-                                      ));
+                                      ),
+                                      (Route<dynamic> route) => false);
                                 } else {
                                   await supabase.auth.signOut();
                                   lunchAwesomDialoge(
@@ -477,33 +578,63 @@ class _SignUpState extends State<SignUp> {
                               });
                               box.put(isStudent, false);
                               box.put(isManager, false);
-                              Navigator.pushReplacement(
+                              Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => MainScreen(),
-                                  ));
+                                  ),
+                                  (Route<dynamic> route) => false);
                             }
-                          } catch (e) {
-                            print(e);
+                          } catch (error) {
                             setState(() {
                               widget.is_loading = false;
                             });
+                            if (error.toString().contains(
+                                "The password is invalid or the user does not have a password.")) {
+                              lunchAwesomDialoge(
+                                  DialogType.error,
+                                  "e",
+                                  getDeviceLocale() == "ar"
+                                      ? "كلمة السر خاطئة!"
+                                      : "Wrong password!",
+                                  context,
+                                  getWidth(context),
+                                  getHeight(context));
+                            } else if (error.toString().contains("email")) {
+                              lunchAwesomDialoge(
+                                  DialogType.error,
+                                  "e",
+                                  getDeviceLocale() == "ar"
+                                      ? "توجد مشكلة في البريد الإلكتروني!"
+                                      : "Wrong email!",
+                                  context,
+                                  getWidth(context),
+                                  getHeight(context));
+                            } else {
+                              lunchAwesomDialoge(
+                                  DialogType.error,
+                                  "e",
+                                  getDeviceLocale() == "ar"
+                                      ? "يوجد خطأ ما!"
+                                      : "Something went wrong!",
+                                  context,
+                                  getWidth(context),
+                                  getHeight(context));
+                            }
                           }
                         } else {
-                          setState(() {
-                            widget.is_loading = true;
-                          });
+                          
 
                           try {
                             setState(() {
                               widget.is_loading = true;
                             });
-
+                            
                             var user = await supabase.auth.signInWithPassword(
-                              email: userEmail,
-                              password: userPassword,
+                              email: widget.emailController.text.trim(),
+                              password: widget.passwordController.text.trim(),
                             );
-
+                           
                             var email = user.user?.email;
                             var data = await supabase
                                 .from("manager")
@@ -512,7 +643,9 @@ class _SignUpState extends State<SignUp> {
                                 .eq("code", widget.codeController.text)
                                 .maybeSingle();
 
-                            if (data != null) {
+                            if (data != null &&
+                                widget.universityNumberController.text.trim() ==
+                                    "1111") {
                               setState(() {
                                 widget.is_loading = false;
                               });
@@ -522,6 +655,11 @@ class _SignUpState extends State<SignUp> {
                               box.put(isStudent, false);
                               box.put(isCode, data["codeP"]);
                               box.put(isFile, data["file"]);
+                              box.put(watching, data["watch"]);
+                              box.put(editing, data["edite"]);
+                              box.put(noting, data["not"]);
+                              box.put(deleting, data["delete"]);
+                              await initUserInfo();
                               Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
@@ -571,6 +709,8 @@ class _SignUpState extends State<SignUp> {
                                   getWidth(context),
                                   getHeight(context));
                             } else {
+                              print(error);
+                              print("++++++++++++++");
                               lunchAwesomDialoge(
                                   DialogType.error,
                                   "e",
@@ -592,7 +732,11 @@ class _SignUpState extends State<SignUp> {
                             ? CircularProgressIndicator(
                                 color: Colors.white,
                               )
-                            : Text(
+                            : AutoSizeText(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 10,
+                                maxFontSize: 15,
                                 getDeviceLocale() == "ar"
                                     ? Translation()
                                         .translateMe["Arabic"]!["Log_in"]

@@ -12,7 +12,7 @@ class VideoCacheManager extends CacheManager {
   VideoCacheManager._()
       : super(Config(
           key,
-          stalePeriod: const Duration(days: 7), // Cache files for 30 days
-          maxNrOfCacheObjects: 100, // Maximum number of cached files
+          stalePeriod: const Duration(days: 30), // Cache files for 30 days
+          maxNrOfCacheObjects: 300, // Maximum number of cached files
         ));
 }

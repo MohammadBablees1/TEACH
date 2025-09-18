@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -23,7 +24,7 @@ class EditableAdScreen extends StatefulWidget {
   String grade = "";
   String collage = "";
   EditableAdScreen({required this.ad});
-  String? selectedValue;
+
   String? selectedGrade;
   Object? selectedCollage;
   String? previusGrade;
@@ -35,11 +36,8 @@ class EditableAdScreen extends StatefulWidget {
 class _EditableAdScreenState extends State<EditableAdScreen> {
   @override
   void initState() {
-    widget.selectedGrade = widget.ad["grade"];
-    widget.selectedValue = widget.ad["category"];
-    widget.previusGrade = widget.selectedValue;
-    widget.previusCollage = widget.selectedGrade;
-    widget.selectedCollage = widget.ad["collage"];
+    widget.selectedGrade = widget.ad["collage"];
+
     id = universety.where(
       (element) => element.name == widget.selectedGrade,
     );
@@ -61,7 +59,11 @@ class _EditableAdScreenState extends State<EditableAdScreen> {
                 bottomRight: Radius.circular(30),
                 bottomLeft: Radius.circular(30))),
         centerTitle: true,
-        title: Text(
+        title: AutoSizeText(
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          minFontSize: 10,
+          maxFontSize: 15,
           getDeviceLocale() == "ar" ? "تعديل الإعلان" : "ُEdit the ad",
           style: TextStyle(color: Colors.white),
         ),
@@ -153,7 +155,11 @@ class _EditableAdScreenState extends State<EditableAdScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: Container(
                     width: getWidth(context),
-                    child: Text(
+                    child: AutoSizeText(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: 10,
+                      maxFontSize: 15,
                       getDeviceLocale() == "ar"
                           ? "اختر الفئة المتبوع لها : "
                           : "Choose the category to follow : ",
@@ -162,219 +168,74 @@ class _EditableAdScreenState extends State<EditableAdScreen> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton2(
-                      isExpanded: true,
-                      buttonStyleData: ButtonStyleData(
-                          decoration: BoxDecoration(
-                              border: Border.all(
-                                width: 1,
-                                color: mode ? Colors.white : dayBar["blue2"],
-                              ),
-                              borderRadius: BorderRadius.circular(20))),
-                      hint: Text(
-                        getDeviceLocale() == "ar"
-                            ? "اختر الفئة المتبوع لها : "
-                            : "Choose the category to follow : ",
-                      ),
-                      items: getDeviceLocale() == "ar"
-                          ? itemsInArabic
-                              .map((String value) => DropdownMenuItem(
-                                    child: Text(value),
-                                    value: value,
-                                  ))
-                              .toList()
-                          : itemsInEnglish
-                              .map((String value) => DropdownMenuItem(
-                                    child: Text(value),
-                                    value: value,
-                                  ))
-                              .toList(),
-                      value: widget.selectedValue,
-                      onChanged: (value) {
-                        setState(() {
-                          widget.selectedValue = value;
-                        });
-                      },
-                      dropdownStyleData: DropdownStyleData(
-                          decoration: BoxDecoration(
-                        color: mode ? nightBar["orange"] : Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
-                      )),
-                    ),
-                  ),
-                ),
-                widget.selectedValue != null
-                    ? FutureBuilder(
-                        future: getTruthSubject(widget.selectedValue),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: mode ? Colors.white : dayBar["blue2"],
-                              ),
-                            );
-                          } else {
-                            var data = snapshot.data;
+                FutureBuilder(
+                    future: getTruthSubject(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: mode ? Colors.white : dayBar["blue2"],
+                          ),
+                        );
+                      } else {
+                        var data = snapshot.data;
 
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton2(
-                                  isExpanded: true,
-                                  buttonStyleData: ButtonStyleData(
-                                      decoration: BoxDecoration(
-                                          border: Border.all(
-                                            width: 1,
-                                            color: mode
-                                                ? Colors.white
-                                                : dayBar["blue2"],
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(20))),
-                                  hint: Text(
-                                    getDeviceLocale() == "ar"
-                                        ? widget.selectedValue == "جامعي" ||
-                                                widget.selectedValue ==
-                                                    itemsInEnglish[3]
-                                            ? "اختر نوع الجامعة"
-                                            : "اختر الدرجة العلمية : "
-                                        : widget.selectedValue == "جامعي" ||
-                                                widget.selectedValue ==
-                                                    itemsInEnglish[3]
-                                            ? "Choose the type of university"
-                                            : "Choose the academic degree : ",
-                                  ),
-                                  items: getDeviceLocale() == "ar"
-                                      ? (data)!
-                                          .map((String value) =>
-                                              DropdownMenuItem(
-                                                child: Text(value),
-                                                value: value,
-                                              ))
-                                          .toList()
-                                      : (data)!
-                                          .map((String value) =>
-                                              DropdownMenuItem(
-                                                child: Text(value),
-                                                value: value,
-                                              ))
-                                          .toList(),
-                                  value: widget.previusGrade !=
-                                          widget.selectedValue
-                                      ? data[0]
-                                      : widget.selectedGrade,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      widget.selectedGrade = value;
-                                      widget.previusGrade =
-                                          widget.selectedValue;
-                                      id = universety.where(
-                                        (element) =>
-                                            element.name ==
-                                            widget.selectedGrade,
-                                      );
-                                    });
-                                  },
-                                  dropdownStyleData: DropdownStyleData(
-                                      decoration: BoxDecoration(
-                                    color: mode
-                                        ? nightBar["orange"]
-                                        : Colors.white,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20)),
-                                  )),
-                                ),
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton2(
+                              isExpanded: true,
+                              buttonStyleData: ButtonStyleData(
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                        width: 1,
+                                        color: mode
+                                            ? Colors.white
+                                            : dayBar["blue2"],
+                                      ),
+                                      borderRadius: BorderRadius.circular(20))),
+                              hint: AutoSizeText(
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 10,
+                                maxFontSize: 15,
+                                getDeviceLocale() == "ar"
+                                    ? "اختر الدرجة العلمية : "
+                                    : "Choose the academic degree : ",
                               ),
-                            );
-                          }
-                        })
-                    : Container(),
-                widget.selectedGrade != null &&
-                        (widget.selectedValue == "جامعي" ||
-                            widget.selectedValue == itemsInEnglish[3]) &&
-                        (widget.previusGrade == "جامعي" ||
-                            widget.previusGrade == itemsInEnglish[3])
-                    ? FutureBuilder(
-                        future:
-                            getTruthDegree(widget.selectedGrade, id.first.id),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: mode ? Colors.white : dayBar["blue2"],
-                              ),
-                            );
-                          } else {
-                            var data = snapshot.data;
+                              items: (data)!
+                                  .map((String value) => DropdownMenuItem(
+                                        child: AutoSizeText(
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            minFontSize: 10,
+                                            maxFontSize: 15,
+                                            value),
+                                        value: value,
+                                      ))
+                                  .toList(),
+                              value: widget.selectedGrade,
+                              onChanged: (value) {
+                                setState(() {
+                                  widget.selectedGrade = value;
 
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton2(
-                                  isExpanded: true,
-                                  buttonStyleData: ButtonStyleData(
-                                      decoration: BoxDecoration(
-                                          border: Border.all(
-                                            width: 1,
-                                            color: mode
-                                                ? Colors.white
-                                                : dayBar["blue2"],
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(20))),
-                                  hint: Text(
-                                    getDeviceLocale() == "ar"
-                                        ? "اختر الدرجة العلمية : "
-                                        : "Choose the academic degree : ",
-                                  ),
-                                  items: getDeviceLocale() == "ar"
-                                      ? (data)!
-                                          .map((String value) =>
-                                              DropdownMenuItem(
-                                                child:
-                                                    Text(value.split("/").last),
-                                                value: value.split("/").last,
-                                              ))
-                                          .toList()
-                                      : (data)!
-                                          .map((String value) =>
-                                              DropdownMenuItem(
-                                                child: Text(value),
-                                                value: value,
-                                              ))
-                                          .toList(),
-                                  value: (widget.previusCollage !=
-                                              widget.selectedGrade) ||
-                                          (widget.selectedValue !=
-                                              widget.selectedGrade)
-                                      ? data[0]
-                                      : widget.selectedCollage,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      widget.selectedCollage = value;
-                                      widget.previusCollage =
-                                          widget.selectedGrade;
-                                    });
-                                  },
-                                  dropdownStyleData: DropdownStyleData(
-                                      decoration: BoxDecoration(
-                                    color: mode
-                                        ? nightBar["orange"]
-                                        : Colors.white,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20)),
-                                  )),
-                                ),
-                              ),
-                            );
-                          }
-                        })
-                    : Container(),
+                                  id = universety.where(
+                                    (element) =>
+                                        element.name == widget.selectedGrade,
+                                  );
+                                });
+                              },
+                              dropdownStyleData: DropdownStyleData(
+                                  decoration: BoxDecoration(
+                                color: mode ? nightBar["orange"] : Colors.white,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                              )),
+                            ),
+                          ),
+                        );
+                      }
+                    }),
                 ElevatedButton(
                   onPressed: () async {
                     setState(() {
@@ -383,15 +244,7 @@ class _EditableAdScreenState extends State<EditableAdScreen> {
 
                     await BlocProvider.of<TeachCubit>(context).editAd({
                       "imageUrl": widget.ad["imageUrl"],
-                      if (widget.selectedValue != null)
-                        "category": widget.selectedValue,
-                      if (widget.selectedGrade != null)
-                        "grade": widget.selectedGrade,
-                      "collage": widget.selectedCollage != null &&
-                              (widget.selectedValue == "جامعي" ||
-                                  widget.selectedValue == itemsInEnglish[3])
-                          ? widget.collage
-                          : "",
+                      "collage": widget.selectedGrade,
                     }, widget.selectedImage != "", widget.selectedImage,
                         widget.ad);
 
@@ -413,7 +266,11 @@ class _EditableAdScreenState extends State<EditableAdScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : Text(
+                      : AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           getDeviceLocale() == "ar" ? "تعديل" : "Edit",
                           style: TextStyle(color: Colors.white),
                         ),

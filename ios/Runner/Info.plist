@@ -2,6 +2,17 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>com.example.teach</string>
+				</array>
+				<key>CFBundleURLName</key>
+				<string>login-callback</string>
+			</dict>
+		</array>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
@@ -66,7 +77,7 @@
 			<key>UIFileSharingEnabled</key>
 			<true/>
 			<key>NSCameraUsageDescription</key>
-<string>Camera permission is required for barcode scanning.</string>
+			<string>Camera permission is required for barcode scanning.</string>
 			<key>NSCameraUsageDescription</key>
 			<string>We need access to your camera to scan barcodes</string>
 			<key>NSMicrophoneUsageDescription</key>
@@ -76,6 +87,8 @@
 				<string>https</string>
 				<string>http</string>
 			</array>
+			<key>FirebaseAppDelegateProxyEnabled</key>
+<false/>
 		</dict>
 	</dict>
 </plist>

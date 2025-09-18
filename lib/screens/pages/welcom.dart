@@ -1,5 +1,6 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
@@ -44,7 +45,11 @@ class _WelcomState extends State<Welcom> {
           Image.asset(widget.imagePath[0]),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(
+            child: AutoSizeText(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              minFontSize: 10,
+              maxFontSize: 15,
               widget.description1,
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -54,7 +59,11 @@ class _WelcomState extends State<Welcom> {
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(
+            child: AutoSizeText(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              minFontSize: 10,
+              maxFontSize: 15,
               widget.description2,
               style: TextStyle(
                   fontWeight: FontWeight.bold,
@@ -73,7 +82,11 @@ class _WelcomState extends State<Welcom> {
                   onPressed: widget.onNext,
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: Text(
+                    child: AutoSizeText(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: 10,
+                      maxFontSize: 15,
                       getDeviceLocale() == "ar"
                           ? Translation().translateMe["Arabic"]!["next_button"]
                           : Translation()
@@ -113,6 +126,7 @@ class _WelcomState extends State<Welcom> {
                 });
               },
               child: AnimatedContainer(
+                width: getWidth(context),
                 duration: Duration(milliseconds: 300),
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -123,10 +137,11 @@ class _WelcomState extends State<Welcom> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Container(
-                        width: getWidth(context) / 1.8,
-                        height: getHeight(context) / 6,
+                        width: getWidth(context) * .35,
+                        height: getWidth(context) * .35,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(20),
@@ -141,21 +156,33 @@ class _WelcomState extends State<Welcom> {
                           ),
                         )),
                     Container(
-                      height: getHeight(context) / 8,
+                      height: getWidth(context) * .2,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Text(
+                          AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             widget.description1.split(",").first,
                             style: TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold),
                           ),
-                          Text(
+                          AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             getDeviceLocale() == "ar"
                                 ? "إذا كان لديك حساب بالفعل "
                                 : "If you already have an account ",
                           ),
-                          Text(
+                          AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             getDeviceLocale() == "ar"
                                 ? "يمكنك الدخول إليه من هنا"
                                 : "you can access it from here",
@@ -182,6 +209,7 @@ class _WelcomState extends State<Welcom> {
                 });
               },
               child: AnimatedContainer(
+                width: getWidth(context),
                 duration: Duration(milliseconds: 300),
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -192,39 +220,52 @@ class _WelcomState extends State<Welcom> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Container(
-                        width: getWidth(context) / 1.8,
-                        height: getHeight(context) / 6,
-                        decoration: BoxDecoration(
+                        width: getWidth(context) * .35,
+                        height: getWidth(context) * .35,
+                        decoration: const BoxDecoration(
                           borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(20),
                               topRight: Radius.circular(20)),
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                               topRight: Radius.circular(20),
                               bottomRight: Radius.circular(20)),
                           child: Image.asset(
                             widget.imagePath[0],
                           ),
                         )),
-                    Container(
-                      height: getHeight(context) / 8,
+                    SizedBox(
+                      height: getWidth(context) * .2,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Text(
+                          AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             widget.description1.split(",")[1],
                             style: TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold),
                           ),
-                          Text(
+                          AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             getDeviceLocale() == "ar"
                                 ? "إذا كنت طالباً جديداً "
                                 : "If you are a new student",
                           ),
-                          Text(
+                          AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                             getDeviceLocale() == "ar"
                                 ? "يمكنك تسجيل الدخول من هنا"
                                 : "You can log in from here.",
@@ -259,6 +300,8 @@ class _WelcomState extends State<Welcom> {
                                           TextEditingController(text: ""),
                                       passwordController:
                                           TextEditingController(text: ""),
+                                      universityNumberController:
+                                          TextEditingController(text: ""),
                                     ),
                                   ));
                             }
@@ -277,7 +320,11 @@ class _WelcomState extends State<Welcom> {
                             },
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
-                    child: Text(
+                    child: AutoSizeText(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: 10,
+                      maxFontSize: 15,
                       getDeviceLocale() == "ar"
                           ? Translation().translateMe["Arabic"]!["Log_in"]
                           : Translation().translateMe["English"]!["Log_in"],

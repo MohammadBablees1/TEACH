@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
@@ -61,7 +62,11 @@ class _NoInternetState extends State<NoInternet> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Center(
-                      child: Text(
+                      child: AutoSizeText(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        minFontSize: 10,
+                        maxFontSize: 15,
                         getDeviceLocale() == "ar"
                             ? "تحقق من اتصالك بالانترنت"
                             : "Check your internet connection",

@@ -1,11 +1,12 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:hive/hive.dart';
 import 'package:teach/cubit/clauserCubit/clauser_index_cubit.dart';
 import 'package:teach/cubit/loading_pdf/loading_pdf_cubit.dart';
 import 'package:teach/cubit/teachCubit/teach_cubit.dart';
@@ -42,6 +43,7 @@ class _ShowAdsState extends State<ShowAds> {
     super.initState();
   }
 
+  var box = Hive.box(hiveBoxName);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +65,7 @@ class _ShowAdsState extends State<ShowAds> {
               Icons.arrow_back_ios_new_outlined,
             )),
         actions: [
-          checkPermision()
+          checkPermision(true, false, false, false, false, false)
               ? IconButton(
                   onPressed: () async {
                     if (await checkConnection()) {
@@ -88,7 +90,7 @@ class _ShowAdsState extends State<ShowAds> {
                     color: Colors.white,
                   ))
               : Container(),
-          checkPermision()
+          checkPermision(false, true, false, false, false,false)
               ? IconButton(
                   onPressed: () async {
                     if (await checkConnection()) {
@@ -106,9 +108,14 @@ class _ShowAdsState extends State<ShowAds> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
                                   children: [
-                                    Text(getDeviceLocale() == "ar"
-                                        ? "هل أنت متأكّد من الحذف؟"
-                                        : "Are you sure you want to delete?"),
+                                    AutoSizeText(
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        minFontSize: 10,
+                                        maxFontSize: 15,
+                                        getDeviceLocale() == "ar"
+                                            ? "هل أنت متأكّد من الحذف؟"
+                                            : "Are you sure you want to delete?"),
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceAround,
@@ -122,7 +129,7 @@ class _ShowAdsState extends State<ShowAds> {
                                                       context)
                                                   .deleteAd(
                                                       widget.ads[widget.index]);
-                                                  context
+                                              context
                                                   .read<LoadingPdfCubit>()
                                                   .loadingPdf(false);
                                               Navigator.of(context)
@@ -138,11 +145,17 @@ class _ShowAdsState extends State<ShowAds> {
                                                       (Route<dynamic> route) =>
                                                           false);
                                             },
-                                            child: state is LoadingPdf && state.loading
+                                            child: state is LoadingPdf &&
+                                                    state.loading
                                                 ? CircularProgressIndicator(
                                                     color: Colors.white,
                                                   )
-                                                : Text(
+                                                : AutoSizeText(
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    minFontSize: 10,
+                                                    maxFontSize: 15,
                                                     getDeviceLocale() == "ar"
                                                         ? "نعم"
                                                         : "Yes",
@@ -153,7 +166,11 @@ class _ShowAdsState extends State<ShowAds> {
                                             onPressed: () async {
                                               Navigator.pop(context);
                                             },
-                                            child: Text(
+                                            child: AutoSizeText(
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              minFontSize: 10,
+                                              maxFontSize: 15,
                                               getDeviceLocale() == "ar"
                                                   ? "لا"
                                                   : "No",

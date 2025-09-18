@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -60,7 +61,11 @@ class _ViewPdfState extends State<ViewPdf> {
       appBar: AppBar(
         centerTitle: true,
         actionsIconTheme: IconThemeData(color: Colors.white),
-        title: Text(
+        title: AutoSizeText(
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          minFontSize: 10,
+          maxFontSize: 15,
           getDeviceLocale() == "ar" ? "ملف pdf" : "pdf file",
           style: TextStyle(),
         ),
@@ -84,7 +89,11 @@ class _ViewPdfState extends State<ViewPdf> {
               )))
           : _errorMessage != null
               ? Center(
-                  child: Text(
+                  child: AutoSizeText(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    minFontSize: 10,
+                    maxFontSize: 15,
                     _errorMessage!.toString(),
                     style: TextStyle(color: Colors.red),
                   ),

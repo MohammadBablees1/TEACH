@@ -1,20 +1,15 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:bloc/bloc.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:meta/meta.dart';
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:teach/data/consts/app_const.dart';
-import 'package:teach/data/modules/user_plus.dart';
-import 'package:teach/data/sql/sql.dart';
 import 'package:teach/main.dart';
+import 'package:teach/data/consts/app_const.dart' as connection;
 part 'teach_state.dart';
 
 class TeachCubit extends Cubit<TeachState> {
@@ -23,19 +18,6 @@ class TeachCubit extends Cubit<TeachState> {
   Future<bool> checkConnection() async {
     await checkSignIn();
 
-    // final listener =
-    //     InternetConnection().onStatusChange.listen((InternetStatus status) {
-    //   switch (status) {
-    //     case InternetStatus.connected:
-    //       emit(Connected());
-
-    //       break;
-    //     case InternetStatus.disconnected:
-    //       emit(NotConnected());
-    //       break;
-    //   }
-    // });
-    // listener.cancel();
     return true;
   }
 
@@ -51,6 +33,20 @@ class TeachCubit extends Cubit<TeachState> {
         currentUser == null)) {
       emit(NoUSerFound());
     } else {
+      if (await connection.checkConnection()) {
+        var lastVersion =
+            await supabase.from("last_version").select().eq("id", 1);
+        if (appVersion == lastVersion[0]["version"]) {
+          emit(UserFound());
+        } else if (lastVersion[0]["forced"]) {
+          emit(UpdateRecomended());
+        } else {
+          emit(UserFound());
+        }
+      } else {
+        emit(UserFound());
+      }
+
       // var data = await FirebaseFirestore.instance
       //     .collection("update")
       //     .doc("09pJXphQbASA10QcPhby")
@@ -59,7 +55,7 @@ class TeachCubit extends Cubit<TeachState> {
       // if (isUpdateReq) {
       //   emit(UpdateApp());
       // } else {
-      emit(UserFound());
+
       // }
     }
   }
@@ -69,10 +65,15 @@ class TeachCubit extends Cubit<TeachState> {
       email: email,
       password: password,
     );
-
+    var box = Hive.box(hiveBoxName);
+    box.put("student_name", userInfo["name"]);
+    box.put(isStudent, true);
+    box.put(isMainManager, false);
+    box.put(isManager, false);
     var id = user.user!.id;
 
     userInfo.addAll({"id": id});
+
     await supabase.from('current_user').insert(userInfo);
     // await FirebaseFirestore.instance.collection("user").doc(id).set(userInfo);
   }
@@ -108,8 +109,6 @@ class TeachCubit extends Cubit<TeachState> {
 
   Future<void> createAd(
     File file,
-    String cateName,
-    String grade,
     String collage,
   ) async {
     try {
@@ -135,20 +134,20 @@ class TeachCubit extends Cubit<TeachState> {
 
       // 4. Get public URL
       final imageUrl = supabase.storage.from('ads').getPublicUrl(fileName);
-      print("Generated URL: $imageUrl"); // Debug print
+      // Debug print
       // 5. Store metadata in Supabase Database
 
       await supabase
           .from('ads') // Your table name
           .insert({
         'imageUrl': imageUrl,
-        'category': cateName,
-        'grade': grade,
         'collage': collage,
         "name": fileName,
       });
     } catch (e) {
-      print("Error occurred: $e");
+      if (kDebugMode) {
+        print("Error occurred: $e");
+      }
 
       rethrow;
     } finally {}
@@ -188,51 +187,53 @@ class TeachCubit extends Cubit<TeachState> {
     //   persistenceEnabled: true,
     // );
     var box = Hive.box(hiveBoxName);
-
-    var ads;
-    if (box.get(isStudent)) {
-      var data = await supabase
-          .from("current_user")
-          .select()
-          .eq("id", supabase.auth.currentUser!.id);
-      var checkCollage = await supabase
-          .from("current_user")
-          .select()
-          .eq("id", supabase.auth.currentUser!.id)
-          .filter("collage", "is", null)
-          .maybeSingle();
-      if (checkCollage == null) {
-        ads = await supabase
-            .from("ads")
-            .select()
-            .eq("category", data[0]["grade"])
-            .eq("grade", data[0]["category"]);
-      } else {
-        ads = await supabase
-            .from("ads")
-            .select()
-            .eq("category", data[0]["grade"])
-            .eq("grade", data[0]["category"])
-            .eq("collage", data[0]["collage"]);
-      }
+    var user = supabase.auth.currentUser;
+    if (user == null) {
+      return ["null"];
     } else {
-      var data = await supabase
-          .from("current_user")
-          .select()
-          .eq("id", supabase.auth.currentUser!.id);
-      ads = await supabase.from("ads").select();
+      var ads;
+      try {
+        if (box.get(isStudent)) {
+          try {
+            var data = await supabase
+                .from("current_user")
+                .select()
+                .eq("id", supabase.auth.currentUser!.id);
+
+            ads = await supabase
+                .from("ads")
+                .select()
+                .eq("collage", data[0]["category"]);
+          } catch (e) {
+            if (kDebugMode) {
+              print(e);
+            }
+          }
+        } else {
+          ads = await supabase.from("ads").select();
+        }
+      } catch (e) {
+        print(e);
+      }
+      return ads;
     }
+
 //GetOptions(source: Source.cache)
-    return ads;
   }
 
   Future<void> deleteAd(ad) async {
     try {
+      print(ad);
       List<String> path = [];
-      path.add(ad["name"]);
+      path.add(ad["name"].toString());
       await supabase.storage.from("ads").remove(path);
-      await supabase.from("ads").delete().eq("id", ad["id"]);
-    } catch (e) {}
+      await supabase
+          .from("ads")
+          .delete()
+          .eq("id", int.parse(ad["id"].toString()));
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> editAd(ad, image, newPath, id) async {

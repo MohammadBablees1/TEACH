@@ -1,9 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:teach/cubit/change_name/change_name_cubit.dart';
+import 'package:teach/cubit/color_me/color_me_cubit.dart';
+import 'package:teach/cubit/managerScreen/manager_screen_cubit.dart';
+import 'package:teach/cubit/phone_number/phone_number_cubit.dart';
+import 'package:teach/cubit/search_code/selected_code_search_cubit.dart';
 
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -26,15 +32,15 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:teach/cubit/them_mode/them_mode_cubit.dart';
 import 'package:teach/cubit/timer_cubit/timer_cubit_cubit.dart';
 import 'package:teach/cubit/upload_video_cubit/upload_video_cubit.dart';
+import 'package:teach/cubit/whate_to_uploade/whate_to_uploade_cubit.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
-import 'package:teach/screens/check_connection.dart' as ch;
+import 'package:teach/firebase_options.dart';
 import 'package:teach/screens/main_screen.dart';
 import 'package:teach/screens/page_veiw.dart';
 import 'package:teach/screens/pages/student_main_screen.dart';
 import 'package:teach/screens/pages/update_screen.dart';
 import 'package:teach/screens/waiting_screen.dart';
-import 'firebase_options.dart';
 
 void main() async {
   // TeXRederingServer.renderingEngine = const TeXViewRenderingEngine.mathjax();
@@ -44,20 +50,42 @@ void main() async {
   //   await TeXRederingServer.initController();}
 
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: "api.env");
   await Supabase.initialize(
-    url: "https://acqtlcyjhmrzacbjgwrv.supabase.co",
-    anonKey:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjcXRsY3lqaG1yemFjYmpnd3J2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1NzMxMTIsImV4cCI6MjA2MDE0OTExMn0.KKVyL8IwuEKRrnNUjkbfut6_GLF3gyJCy0As5LyH4p4",
+    url: dotenv.env["SUPABASE_URL"].toString(),
+    anonKey: dotenv.env["SUPABASE_KEY"].toString(),
   );
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseFirestore.instance.settings = const Settings(
-      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED, persistenceEnabled: true);
 
   await Hive.initFlutter();
   await Hive.openBox(hiveBoxName);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+ // FirebaseMessaging.instance.setAutoInitEnabled(false);
+await AwesomeNotifications().initialize(
+  null,
+  [
+    NotificationChannel(
+      channelKey: 'basic_channel',
+      channelName: 'Basic Notifications',
+      channelDescription: 'Channel for basic notifications',
+      importance: NotificationImportance.High,
+      defaultColor: Colors.blue,
+      ledColor: Colors.white,
+      playSound: true,
+      enableVibration: true,
+    ),
+  ],
+);
 
+  // طلب إذن الإشعارات (لـ iOS)
+  await AwesomeNotifications().requestPermissionToSendNotifications();
+FirebaseMessaging.onMessage.listen((RemoteMessage message) async{
+  await  showNotification(message);
+});
+  // معالجة الإشعارات في الخلفية
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(
     MultiBlocProvider(providers: [
       BlocProvider(create: (_) => TeachCubit()..checkConnection()),
@@ -76,9 +104,23 @@ void main() async {
       BlocProvider(create: (_) => HomeSearchCubit()),
       BlocProvider(create: (_) => ChangeOpacityCubit()),
       BlocProvider(create: (_) => SelecteClassCubit()),
-      BlocProvider(create: (_) => SelectedValueCubit())
+      BlocProvider(create: (_) => SelectedValueCubit()),
+      BlocProvider(create: (_) => SelectedCodeSearchCubit()),
+      BlocProvider(create: (_) => PhoneNumberCubit()),
+      BlocProvider(create: (_) => WhateToUploadeCubit()),
+      BlocProvider(create: (_) => ColorMeCubit()),
+      BlocProvider(create: (_) => ManagerScreenCubit()),
+      BlocProvider(create: (_) => ChangeNameCubit()),
     ], child: const MyApp()),
   );
+}
+
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await showNotification(message);
 }
 
 final supabase = Supabase.instance.client;
@@ -93,14 +135,7 @@ class MyApp extends StatefulWidget {
       context.findAncestorStateOfType<_MyAppState>();
 }
 
-class _MyAppState extends State<MyApp> {
-  // @override
-  // void initState() {
-  //   var lan = getDeviceLocale();
-  //   super.initState();
-  // }
-
-  // This widget is the root of your application.
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final ThemeData darkTheme = ThemeData(
@@ -126,13 +161,13 @@ class _MyAppState extends State<MyApp> {
       brightness: Brightness.light,
       scaffoldBackgroundColor: Colors.white,
       appBarTheme: AppBarTheme(
-          color: dayBar["blue"],
+          color: dayBar["blue3"],
           iconTheme: IconThemeData(color: Colors.white),
           titleTextStyle: TextStyle(
               color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
       elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-        backgroundColor: dayBar["blue2"],
+        backgroundColor: dayBar["blue3"],
       )),
       bottomAppBarTheme: BottomAppBarTheme(
         color: dayBar["blue"],
@@ -175,12 +210,12 @@ class _MyAppState extends State<MyApp> {
               // } else
               if (state is NoUSerFound) {
                 return PageVeiwScreen();
-              } else if (state is UpdateApp) {
+              } else if (state is UpdateRecomended) {
                 return UpdateScreen();
               } else if (state is UserFound) {
                 var box = Hive.box(hiveBoxName);
                 var student = box.get(isStudent);
-                if (student) {
+                if (student != null && student) {
                   return StudentMainScreen();
                 } else {
                   return MainScreen();

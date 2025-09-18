@@ -1,7 +1,9 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:awesome_dialog/awesome_dialog.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:teach/cubit/lunch_loading_cubit/lunch_loading_cubit.dart';
 import 'package:teach/data/consts/app_const.dart';
@@ -21,7 +23,11 @@ class UpdatePassword extends StatelessWidget {
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30))),
         centerTitle: true,
-        title: Text(
+        title: AutoSizeText(
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          minFontSize: 10,
+          maxFontSize: 15,
           getDeviceLocale() == "ar" ? "تغيير كلمة المرور" : "Change password",
         ),
         leading: IconButton(
@@ -124,54 +130,98 @@ class UpdatePassword extends StatelessWidget {
               builder: (context, state) {
                 return ElevatedButton(
                   onPressed: () async {
-                    // await supabase.auth.updateUser(
-                    //   UserAttributes(password: newPassword),
-                    // );
-                    // if (await checkConnection()) {
-                    //   if (globalKey.currentState!.validate()) {
-                    //     try {
-                    //       context.read<LunchLoadingCubit>().lunchLoading(true);
-                    //       final user = FirebaseAuth.instance.currentUser;
+                    if (await checkConnection()) {
+                      if (globalKey.currentState!.validate()) {
+                        try {
+                          context.read<LunchLoadingCubit>().lunchLoading(true);
+                          var box = Hive.box(hiveBoxName);
+                          if (box.get(isMainManager)) {
+                            var data =
+                                await supabase.from("main_manager").select();
 
-                    //       // You'll need to get the user's current credentials (email/password)
-                    //       // You might need to ask the user for their current password
-                    //       final credential = EmailAuthProvider.credential(
-                    //         email: user!.email!,
-                    //         password:
-                    //             currentPassword, // You need to obtain this from the user
-                    //       );
+                            if (data[0]["password"] == currentPassword) {
+                              await supabase.auth.updateUser(
+                                UserAttributes(password: newPassword),
+                              );
+                              await supabase
+                                  .from("main_manager")
+                                  .update({"password": newPassword}).eq(
+                                      "password", currentPassword);
+                            } else {
+                              context
+                                  .read<LunchLoadingCubit>()
+                                  .lunchLoading(false);
+                              lunchAwesomDialoge(
+                                  DialogType.error,
+                                  "e",
+                                  getDeviceLocale() == "ar"
+                                      ? "كلمة السر خاطئة"
+                                      : "Incorrect password",
+                                  context,
+                                  getWidth(context),
+                                  getHeight(context));
+                            }
+                          } else {
+                            try {
+                              var data = await supabase
+                                  .from("current_user")
+                                  .select()
+                                  .eq("id", supabase.auth.currentUser!.id);
 
-                    //       // Re-authenticate the user
-                    //       await user.reauthenticateWithCredential(credential);
+                              if (data[0]["password"] == currentPassword) {
+                                await supabase.auth.updateUser(
+                                  UserAttributes(password: newPassword),
+                                );
+                                await supabase
+                                    .from("current_user")
+                                    .update({"password": newPassword}).eq(
+                                        "id", data[0]["id"]);
+                              } else {
+                                context
+                                    .read<LunchLoadingCubit>()
+                                    .lunchLoading(false);
+                                lunchAwesomDialoge(
+                                    DialogType.error,
+                                    "e",
+                                    getDeviceLocale() == "ar"
+                                        ? "كلمة السر خاطئة"
+                                        : "Incorrect password",
+                                    context,
+                                    getWidth(context),
+                                    getHeight(context));
+                              
+                              }
+                            } catch (e) {
+                              print(e);
+                            }
+                          }
 
-                    //       // Now you can update the password
-                    //       await user.updatePassword(newPassword);
-                    //       context.read<LunchLoadingCubit>().lunchLoading(false);
-                    //       Navigator.pop(context);
-                    //     } catch (e) {
-                    //       context.read<LunchLoadingCubit>().lunchLoading(false);
-                    //       lunchAwesomDialoge(
-                    //           DialogType.error,
-                    //           "e",
-                    //           getDeviceLocale() == "ar"
-                    //               ? "يوجد خطأ ما"
-                    //               : "There is an error",
-                    //           context,
-                    //           getWidth(context),
-                    //           getHeight(context));
-                    //     }
-                    //   }
-                    // } else {
-                    //   lunchAwesomDialoge(
-                    //       DialogType.warning,
-                    //       "e",
-                    //       getDeviceLocale() == "ar"
-                    //           ? "تأكد من اتصالك بالإنترنت"
-                    //           : "Make sure you are connected to the Internet",
-                    //       context,
-                    //       getWidth(context),
-                    //       getHeight(context));
-                    // }
+                          context.read<LunchLoadingCubit>().lunchLoading(false);
+                          Navigator.pop(context);
+                        } catch (e) {
+                          context.read<LunchLoadingCubit>().lunchLoading(false);
+                          lunchAwesomDialoge(
+                              DialogType.error,
+                              "e",
+                              getDeviceLocale() == "ar"
+                                  ? "يوجد خطأ ما"
+                                  : "There is an error",
+                              context,
+                              getWidth(context),
+                              getHeight(context));
+                        }
+                      }
+                    } else {
+                      lunchAwesomDialoge(
+                          DialogType.warning,
+                          "e",
+                          getDeviceLocale() == "ar"
+                              ? "تأكد من اتصالك بالإنترنت"
+                              : "Make sure you are connected to the Internet",
+                          context,
+                          getWidth(context),
+                          getHeight(context));
+                    }
                   },
                   child: state is LunchLoading
                       ? state.loading
@@ -184,11 +234,19 @@ class UpdatePassword extends StatelessWidget {
                                 ),
                               ),
                             )
-                          : Text(
+                          : AutoSizeText(
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              minFontSize: 10,
+                              maxFontSize: 15,
                               getDeviceLocale() == "ar" ? "تغيير" : "Change",
                               style: TextStyle(color: Colors.white),
                             )
-                      : Text(
+                      : AutoSizeText(
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          minFontSize: 10,
+                          maxFontSize: 15,
                           getDeviceLocale() == "ar" ? "تغيير" : "Change",
                           style: TextStyle(color: Colors.white),
                         ),

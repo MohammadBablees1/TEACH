@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "577055499405",
-    "project_id": "afack-pro",
-    "storage_bucket": "afack-pro.appspot.com"
+    "project_number": "1051650281425",
+    "project_id": "al-multka-af65e",
+    "storage_bucket": "al-multka-af65e.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:577055499405:android:d4d908d714ae90cd3b2ec4",
+        "mobilesdk_app_id": "1:1051650281425:android:a8a1685942afcd5ed59af0",
         "android_client_info": {
           "package_name": "com.example.teach"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD-h8bKndJ59xB01CLwGeczhFAqPtPy2Tc"
+          "current_key": "AIzaSyCIvifvlHRn_TojjgFyOQsVYb1YT_DTlZ0"
         }
       ],
       "services": {

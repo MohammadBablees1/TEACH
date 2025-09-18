@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
@@ -11,12 +12,10 @@ import 'package:teach/cubit/search/search_cubit.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
 import 'package:teach/main.dart';
-import 'package:teach/screens/pages/cate_details.dart';
+
 import 'package:teach/screens/pages/codes.dart';
 import 'package:teach/widgets/no_data_found.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 
 class RecordCodes extends StatefulWidget {
   var searchText = "";
@@ -47,7 +46,8 @@ class _RecordCodesState extends State<RecordCodes> {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
                           return Center(
-                              child: Image.asset("images/loading.gif"));
+                              child:
+                                  myImageAsset("images/loading.gif", context));
                         } else if (snapshot.hasData && snapshot.data == true) {
                           return FutureBuilder(
                             future: Future.wait([
@@ -59,11 +59,8 @@ class _RecordCodesState extends State<RecordCodes> {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
                                 return Center(
-                                  child: Container(
-                                      width: getWidth(context),
-                                      height: getHeight(context) / 2,
-                                      child: Image.asset("images/loading.gif")),
-                                );
+                                    child: myImageAsset(
+                                        "images/loading.gif", context));
                               } else if ((snapshot.data![0].isEmpty &&
                                       widget.manager) ||
                                   snapshot.data![1].isEmpty && widget.codes) {
@@ -120,8 +117,6 @@ class _RecordCodesState extends State<RecordCodes> {
       List<dynamic> selectedData,
       List<dynamic> data,
       sold) {
-   
-    print("+++++++++++++++++");
     return Container(
       width: getWidth(context),
       height: getHeight(context) / 1.266,
@@ -138,225 +133,174 @@ class _RecordCodesState extends State<RecordCodes> {
         itemBuilder: (context, index) => Card(
           color: mode ? nightBar["orange"] : dayBar["blue2"],
           child: ListTile(
-            onTap: () {
-              if ((state is ChangeAnimation && state.codes)) {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => Codes(
-                    name: data[index],
-                  ),
-                ));
-              }
-            },
-            leading: CircleAvatar(
-                backgroundColor: mode ? nightBar["buttons"] : dayBar["blue"],
-                child: Icon(
-                  state is ChangeAnimation
-                      ? state.manager
-                          ? Icons.manage_accounts
-                          : Icons.code
-                      : Icons.manage_accounts,
-                  color: Colors.white,
-                )),
-            title: Text(
-              state is ChangeAnimation
-                  ? state.manager
-                      ? managers[index]["name"]
-                      : widget.searchText != ""
-                          ? selectedData[index]
-                          : data[index]
-                  : managers[index]["name"],
-              style: TextStyle(color: Colors.white),
-            ),
-            trailing: Text(
-              widget.manager
-                  ? ""
-                  : sold.isNotEmpty
-                      ? sold[index]["count"]
-                      : "0",
-              style: TextStyle(color: Colors.white),
-            ),
-            subtitle: state is ChangeAnimation
-                ? state.manager
-                    ? TextButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              content: Container(
-                                height: getHeight(context) / 2.61,
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    PrettyQrView.data(
-                                      data: managers[index]["code"],
-                                      decoration: const PrettyQrDecoration(
-                                        background: Colors.white,
-                                        // image:
-                                        //     PrettyQrDecorationImage(
-                                        //   matchTextDirection: true,
-                                        //   image: AssetImage(
-                                        //     'images/qr_icon.png',
-                                        //   ),
-                                        // ),
-                                      ),
+              onTap: () {
+                if ((state is ChangeAnimation && state.codes)) {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => Codes(
+                      name: data[index],
+                    ),
+                  ));
+                }
+              },
+              leading: CircleAvatar(
+                  backgroundColor: mode ? nightBar["buttons"] : dayBar["blue"],
+                  child: Icon(
+                    state is ChangeAnimation
+                        ? state.manager
+                            ? Icons.manage_accounts
+                            : Icons.code
+                        : Icons.manage_accounts,
+                    color: Colors.white,
+                  )),
+              title: AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
+                state is ChangeAnimation
+                    ? state.manager
+                        ? managers[index]["name"]
+                        : widget.searchText != ""
+                            ? selectedData[index]
+                            : data[index]
+                    : managers[index]["name"],
+                style: TextStyle(color: Colors.white),
+              ),
+              trailing: AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
+                state is ChangeAnimation && state.codes
+                    ? sold.isNotEmpty && sold.length > index
+                        ? sold[index]["count"].toString()
+                        : "0"
+                    : "",
+                style: TextStyle(color: Colors.white),
+              ),
+              subtitle: (state is ChangeAnimation && state.manager) ||
+                      (state is! ChangeAnimation)
+                  ? TextButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            content: Container(
+                              height: getHeight(context) * .5,
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  PrettyQrView.data(
+                                    data: managers[index]["code"],
+                                    decoration: const PrettyQrDecoration(
+                                      background: Colors.white,
                                     ),
-                                    IconButton(
-                                        onPressed: () async {
-                                          final qrCode = QrCode.fromData(
-                                            data: managers[index]["code"],
-                                            errorCorrectLevel:
-                                                QrErrorCorrectLevel.M,
-                                          );
+                                  ),
+                                  Row(
+                                    children: [
+                                      ElevatedButton(
+                                          onPressed: () async {
+                                            final qrCode = QrCode.fromData(
+                                              data: managers[index]["code"],
+                                              errorCorrectLevel:
+                                                  QrErrorCorrectLevel.M,
+                                            );
 
-                                          final qrImage = QrImage(qrCode);
-                                          final qrImageData =
-                                              await qrImage.toImageAsBytes(
-                                            size: 512,
-                                            format: ImageByteFormat.png,
-                                            decoration:
-                                                const PrettyQrDecoration(
-                                              shape: PrettyQrSmoothSymbol(),
-                                              background: Colors.white,
-                                              //   image:
-                                              //       PrettyQrDecorationImage(
-                                              //     image: AssetImage(
-                                              //         'images/icon.jpg'),
-                                              //   ),
-                                              // ),
-                                            ),
-                                          );
-                                          if (qrImageData == null) {
-                                            throw Exception(
-                                                'Failed to generate QR code bytes.');
-                                          }
-                                          final Uint8List qrImageBytes =
-                                              qrImageData.buffer.asUint8List();
-                                          final tempDir =
-                                              await getTemporaryDirectory();
-                                          final tempFile = File(
-                                              '${tempDir.path}/qr_image.png');
-                                          await tempFile
-                                              .writeAsBytes(qrImageBytes);
+                                            final qrImage = QrImage(qrCode);
+                                            final qrImageData =
+                                                await qrImage.toImageAsBytes(
+                                              size: 512,
+                                              format: ImageByteFormat.png,
+                                              decoration:
+                                                  const PrettyQrDecoration(
+                                                shape: PrettyQrSmoothSymbol(),
+                                                background: Colors.white,
+                                              ),
+                                            );
+                                            if (qrImageData == null) {
+                                              throw Exception(
+                                                  'Failed to generate QR code bytes.');
+                                            }
+                                            final Uint8List qrImageBytes =
+                                                qrImageData.buffer
+                                                    .asUint8List();
+                                            final tempDir =
+                                                await getTemporaryDirectory();
+                                            final tempFile = File(
+                                                '${tempDir.path}/qr_image.png');
+                                            await tempFile
+                                                .writeAsBytes(qrImageBytes);
 
-                                          final result =
-                                              await Share.shareXFiles(
-                                                  [XFile(tempFile.path)]);
-                                        },
-                                        icon: Icon(
-                                          Icons.share,
-                                          color: dayBar["blue2"],
-                                        )),
-                                  ],
-                                ),
+                                            final result =
+                                                await Share.shareXFiles(
+                                                    [XFile(tempFile.path)]);
+                                          },
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.image,
+                                                color: Colors.white,
+                                              ),
+                                              AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
+                                                getDeviceLocale() == "ar"
+                                                    ? "مشاركة صورة"
+                                                    : "Share image",
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              )
+                                            ],
+                                          )),
+                                      ElevatedButton(
+                                          onPressed: () async {
+                                            await Share.share(
+                                                managers[index]["code"]);
+                                          },
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.text_fields,
+                                                color: Colors.white,
+                                              ),
+                                              AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
+                                                getDeviceLocale() == "ar"
+                                                    ? "مشاركة نص"
+                                                    : "Share text",
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                            ],
+                                          ))
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                          );
-                        },
-                        child: Text(
-                          state is ChangeAnimation
-                              ? state.manager
-                                  ? managers[index]["code"]
-                                  : widget.searchText != ""
-                                      ? selectedData[index].id
-                                      : data[index]
-                              : managers[index]["code"],
-                          style: TextStyle(color: Colors.white),
-                        ))
-                    : Container()
-                : TextButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          content: Container(
-                            height: getHeight(context) / 2.61,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                PrettyQrView.data(
-                                  data: state is ChangeAnimation
-                                      ? state.manager
-                                          ? managers[index]["code"]
-                                          : ""
-                                      : managers[index]["code"],
-                                  decoration: const PrettyQrDecoration(
-                                    background: Colors.white,
-                                    // image:
-                                    //     PrettyQrDecorationImage(
-                                    //   matchTextDirection: true,
-                                    //   image: AssetImage(
-                                    //     'images/qr_icon.png',
-                                    //   ),
-                                    // ),
-                                  ),
-                                ),
-                                IconButton(
-                                    onPressed: () async {
-                                      final qrCode = QrCode.fromData(
-                                        data: state is ChangeAnimation
-                                            ? state.manager
-                                                ? managers[index]["code"]
-                                                : ""
-                                            : managers[index]["code"],
-                                        errorCorrectLevel:
-                                            QrErrorCorrectLevel.M,
-                                      );
-
-                                      final qrImage = QrImage(qrCode);
-
-                                      final qrImageData =
-                                          await qrImage.toImageAsBytes(
-                                        size: 512,
-                                        format: ImageByteFormat.png,
-                                        decoration: const PrettyQrDecoration(
-                                          shape: PrettyQrSmoothSymbol(),
-                                          background: Colors.white,
-                                          //   image:
-                                          //       PrettyQrDecorationImage(
-                                          //     image: AssetImage(
-                                          //         'images/icon.jpg'),
-                                          //   ),
-                                          // ),
-                                        ),
-                                      );
-
-                                      if (qrImageData == null) {
-                                        throw Exception(
-                                            'Failed to generate QR code bytes.');
-                                      }
-                                      final Uint8List qrImageBytes =
-                                          qrImageData.buffer.asUint8List();
-                                      final tempDir =
-                                          await getTemporaryDirectory();
-                                      final tempFile =
-                                          File('${tempDir.path}/qr_image.png');
-                                      await tempFile.writeAsBytes(qrImageBytes);
-
-                                      final result = await Share.shareXFiles(
-                                          [XFile(tempFile.path)]);
-                                    },
-                                    icon: Icon(
-                                      Icons.share,
-                                      color: dayBar["blue2"],
-                                    )),
-                              ],
-                            ),
                           ),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      state is ChangeAnimation
-                          ? state.manager
-                              ? managers[index]["code"]
-                              : widget.searchText != ""
-                                  ? selectedData[index].id
-                                  : data[index]
-                          : managers[index]["code"],
-                      style: TextStyle(color: Colors.white),
-                    )),
-          ),
+                        );
+                      },
+                      child: AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
+                        (state is ChangeAnimation && state.manager) ||
+                                (state is! ChangeAnimation)
+                            ? managers[index]["code"]
+                            : widget.searchText != ""
+                                ? selectedData[index].id
+                                : data[index],
+                        style: TextStyle(color: Colors.white),
+                      ))
+                  : Container()),
         ),
       ),
     );
@@ -373,13 +317,22 @@ class _RecordCodesState extends State<RecordCodes> {
         builder: (context, state) {
           return state is IsSearch
               ? state.isSearch
-                  ? swichEditText(context)
-                  : Text(
+                  ? swichEditAutoSizeText(
+                           context)
+                  : AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                       getDeviceLocale() == "ar"
                           ? "سجل الأكواد"
                           : "Record codes",
                     )
-              : Text(
+              : AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                   getDeviceLocale() == "ar" ? "سجل الأكواد" : "Record codes",
                 );
         },
@@ -483,7 +436,11 @@ class _RecordCodesState extends State<RecordCodes> {
                                 Icons.manage_accounts_outlined,
                                 color: Colors.white,
                               ),
-                              Text(
+                              AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                                 getDeviceLocale() == "ar"
                                     ? "المدراء"
                                     : "Managers",
@@ -538,7 +495,11 @@ class _RecordCodesState extends State<RecordCodes> {
                                 Icons.code,
                                 color: Colors.white,
                               ),
-                              Text(
+                              AutoSizeText(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            minFontSize: 10,
+                            maxFontSize: 15,
                                 getDeviceLocale() == "ar"
                                     ? "الكورسات"
                                     : "Courses",
@@ -565,7 +526,8 @@ class _RecordCodesState extends State<RecordCodes> {
     );
   }
 
-  swichEditText(BuildContext context) {
+  swichEditAutoSizeText(
+                            BuildContext context) {
     return TextField(
       style: TextStyle(color: Colors.white),
       cursorColor: Colors.white,
@@ -582,7 +544,7 @@ class _RecordCodesState extends State<RecordCodes> {
               borderSide: BorderSide(width: 0, color: Colors.transparent)),
           hintText: getDeviceLocale() == "ar"
               ? "اكتب للبحث هنا..."
-              : "Type to search",
+              : "Type to search...",
           hintStyle: TextStyle(color: Colors.white.withOpacity(.5))),
     );
   }
@@ -603,16 +565,4 @@ class _RecordCodesState extends State<RecordCodes> {
 
     return data;
   }
-
-  // Future<List<String>> getCodesForCourse(String courseName) async {
-  //   var firestore = FirebaseFirestore.instance;
-  //   var snapshot = await firestore
-  //       .collection('codes')
-  //       .doc(courseName)
-  //       .collection('un_used')
-  //       .get();
-
-  //   // Extract codes from document IDs
-  //   return snapshot.docs.map((doc) => doc.id).toList();
-  // }
 }
