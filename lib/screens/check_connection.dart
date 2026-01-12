@@ -8,7 +8,7 @@ import 'package:teach/cubit/teachCubit/teach_cubit.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
 import 'package:teach/data/modules/translate_consts.dart';
-import 'package:teach/screens/page_veiw.dart';
+import 'package:teach/features/welcom_screen/presentation/page_veiw.dart';
 
 class CheckConnection extends StatelessWidget {
   const CheckConnection({super.key});

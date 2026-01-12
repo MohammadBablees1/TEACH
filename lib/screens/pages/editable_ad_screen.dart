@@ -12,7 +12,7 @@ import 'package:teach/cubit/clauserCubit/clauser_index_cubit.dart';
 import 'package:teach/cubit/teachCubit/teach_cubit.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
-import 'package:teach/screens/main_screen.dart';
+import 'package:teach/features/main-screen/presentation/view/main_screen.dart';
 
 class EditableAdScreen extends StatefulWidget {
   var ad;

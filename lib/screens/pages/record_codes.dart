@@ -29,6 +29,7 @@ class _RecordCodesState extends State<RecordCodes> {
 
   @override
   Widget build(BuildContext context) {
+    print("**************");
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
@@ -88,6 +89,7 @@ class _RecordCodesState extends State<RecordCodes> {
                                     }
                                   }
                                 }
+
                                 return code_card(context, state, managers,
                                     selectedData, data, sold);
                               }
@@ -117,6 +119,8 @@ class _RecordCodesState extends State<RecordCodes> {
       List<dynamic> selectedData,
       List<dynamic> data,
       sold) {
+    print(sold);
+    print("**************");
     return Container(
       width: getWidth(context),
       height: getHeight(context) / 1.266,
@@ -153,10 +157,10 @@ class _RecordCodesState extends State<RecordCodes> {
                     color: Colors.white,
                   )),
               title: AutoSizeText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 10,
-                            maxFontSize: 15,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                minFontSize: 10,
+                maxFontSize: 15,
                 state is ChangeAnimation
                     ? state.manager
                         ? managers[index]["name"]
@@ -167,10 +171,10 @@ class _RecordCodesState extends State<RecordCodes> {
                 style: TextStyle(color: Colors.white),
               ),
               trailing: AutoSizeText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 10,
-                            maxFontSize: 15,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                minFontSize: 10,
+                maxFontSize: 15,
                 state is ChangeAnimation && state.codes
                     ? sold.isNotEmpty && sold.length > index
                         ? sold[index]["count"].toString()
@@ -243,10 +247,10 @@ class _RecordCodesState extends State<RecordCodes> {
                                                 color: Colors.white,
                                               ),
                                               AutoSizeText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 10,
-                            maxFontSize: 15,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                minFontSize: 10,
+                                                maxFontSize: 15,
                                                 getDeviceLocale() == "ar"
                                                     ? "مشاركة صورة"
                                                     : "Share image",
@@ -267,10 +271,10 @@ class _RecordCodesState extends State<RecordCodes> {
                                                 color: Colors.white,
                                               ),
                                               AutoSizeText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 10,
-                            maxFontSize: 15,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                minFontSize: 10,
+                                                maxFontSize: 15,
                                                 getDeviceLocale() == "ar"
                                                     ? "مشاركة نص"
                                                     : "Share text",
@@ -288,10 +292,10 @@ class _RecordCodesState extends State<RecordCodes> {
                         );
                       },
                       child: AutoSizeText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 10,
-                            maxFontSize: 15,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        minFontSize: 10,
+                        maxFontSize: 15,
                         (state is ChangeAnimation && state.manager) ||
                                 (state is! ChangeAnimation)
                             ? managers[index]["code"]
@@ -317,22 +321,21 @@ class _RecordCodesState extends State<RecordCodes> {
         builder: (context, state) {
           return state is IsSearch
               ? state.isSearch
-                  ? swichEditAutoSizeText(
-                           context)
+                  ? swichEditAutoSizeText(context)
                   : AutoSizeText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 10,
-                            maxFontSize: 15,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      minFontSize: 10,
+                      maxFontSize: 15,
                       getDeviceLocale() == "ar"
                           ? "سجل الأكواد"
                           : "Record codes",
                     )
               : AutoSizeText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 10,
-                            maxFontSize: 15,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  minFontSize: 10,
+                  maxFontSize: 15,
                   getDeviceLocale() == "ar" ? "سجل الأكواد" : "Record codes",
                 );
         },
@@ -437,10 +440,10 @@ class _RecordCodesState extends State<RecordCodes> {
                                 color: Colors.white,
                               ),
                               AutoSizeText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 10,
-                            maxFontSize: 15,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 10,
+                                maxFontSize: 15,
                                 getDeviceLocale() == "ar"
                                     ? "المدراء"
                                     : "Managers",
@@ -496,10 +499,10 @@ class _RecordCodesState extends State<RecordCodes> {
                                 color: Colors.white,
                               ),
                               AutoSizeText(
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            minFontSize: 10,
-                            maxFontSize: 15,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                minFontSize: 10,
+                                maxFontSize: 15,
                                 getDeviceLocale() == "ar"
                                     ? "الكورسات"
                                     : "Courses",
@@ -526,8 +529,7 @@ class _RecordCodesState extends State<RecordCodes> {
     );
   }
 
-  swichEditAutoSizeText(
-                            BuildContext context) {
+  swichEditAutoSizeText(BuildContext context) {
     return TextField(
       style: TextStyle(color: Colors.white),
       cursorColor: Colors.white,

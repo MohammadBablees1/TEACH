@@ -22,6 +22,7 @@ final class UploadCodeLoading extends LunchLoadingState {
 
 final class GetCodeLoading extends LunchLoadingState {
   var loading = false, index = 0;
+  
   GetCodeLoading({required this.loading, required this.index});
 }
 
@@ -29,10 +30,12 @@ final class GeneratePdf extends LunchLoadingState {
   var loading = false, index = 0;
   GeneratePdf({required this.loading, required this.index});
 }
+
 final class DeleteAllCodesFromUser extends LunchLoadingState {
   var loading = false, index = 0;
   DeleteAllCodesFromUser({required this.loading, required this.index});
 }
+
 final class SendNotification extends LunchLoadingState {
   var loading = false;
   SendNotification({required this.loading});

@@ -20,13 +20,13 @@ class _PlayVideoState extends State<PlayVideo> {
   late final PodPlayerController controller;
   late VideoPlayerController _videoController;
 
-  bool _isCached = false;
+
   @override
   void initState() {
     watchVideo();
     if (widget.data["url"].isNotEmpty) {
       controller = PodPlayerController(
-        podPlayerConfig: PodPlayerConfig(forcedVideoFocus: true),
+        podPlayerConfig: const PodPlayerConfig(forcedVideoFocus: true),
         playVideoFrom: PlayVideoFrom.network(
           widget.data["url"],
         ),
@@ -50,7 +50,7 @@ class _PlayVideoState extends State<PlayVideo> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SingleChildScrollView(
-        child: Container(
+        child: SizedBox(
           width: getWidth(context),
           height: getHeight(context),
           child: Column(
@@ -72,11 +72,11 @@ class _PlayVideoState extends State<PlayVideo> {
               widget.data["url"].isEmpty
                   ? Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Container(
+                      child: SizedBox(
                         width: getWidth(context),
                         height: getWidth(context) * .3,
                         child: Center(
-                          child: Container(
+                          child: SizedBox(
                             width: getWidth(context) * .2,
                             height: getWidth(context) * .2,
                             child: ClipRRect(
@@ -92,7 +92,7 @@ class _PlayVideoState extends State<PlayVideo> {
                       ),
                     )
                   : Container(),
-              Container(
+              SizedBox(
                 width: getWidth(context),
                 child: ListView.builder(
                   shrinkWrap: true,

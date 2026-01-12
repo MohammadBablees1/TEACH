@@ -15,7 +15,7 @@ import 'package:teach/data/consts/day_neight.dart';
 import 'package:teach/data/consts/sql_const.dart';
 import 'package:teach/data/sql/sql.dart';
 import 'package:teach/data/widgets/lunch.dart';
-import 'package:teach/screens/main_screen.dart';
+import 'package:teach/features/main-screen/presentation/view/main_screen.dart';
 import 'package:teach/screens/pages/editable_ad_screen.dart';
 
 class ShowAds extends StatefulWidget {

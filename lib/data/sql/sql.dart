@@ -1,20 +1,24 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:teach/data/consts/app_const.dart';
-import 'package:teach/data/consts/sql_const.dart';
 
 class Sql {
-  late Database database;
+  Database? database;
   Future<String> getDataBasePath() async {
     var databasesPath = await getDatabasesPath();
     String path = join(databasesPath, databaseName);
     return path;
   }
-
+  /// الحصول على قاعدة البيانات (Lazy & Safe)
+   Future<Database> get databaseFuture async {
+    if (database != null) return database!;
+    database = await openCurrentDatabase();
+    return database!;
+  }
   Future openCurrentDatabase() async {
     final databasePath = await getDataBasePath();
 
-    database = await openDatabase(
+    return await openDatabase(
       databasePath,
       version: databaseVersion,
       onCreate: (databse, version) async {
@@ -25,58 +29,44 @@ class Sql {
     );
   }
 
-
   Future lunchnightMode() async {
-    await openCurrentDatabase();
+     final db = await databaseFuture;
 
-    await database.insert("mode", {"id" : "1" ,"night" : "true"
-    });
+    await db.insert("mode", {"id": "1", "night": "true"});
   }
 
   Future lunchEn() async {
-    await openCurrentDatabase();
+    final db = await databaseFuture;
 
-    await database.insert("lan", {"id" : "1" ,"en" : "true"
-    });
+    await db.insert("lan", {"id": "1", "en": "true"});
   }
-
-
 
   // update section
 
   Future updateMode(mode) async {
-    openCurrentDatabase();
-    await database.update("mode", {
-      "id" : "1",
-      "night" : '$mode'
-    },
+     final db = await databaseFuture;
+    await db.update("mode", {"id": "1", "night": '$mode'},
         where: " id = '1'");
   }
 
   Future updateLan(lan) async {
-    openCurrentDatabase();
-    await database.update("lan", {
-      "id" : "1",
-      "en" : '$lan'
-    },
-        where: " id = '1'");
+     final db = await databaseFuture;
+    await db.update("lan", {"id": "1", "en": '$lan'}, where: " id = '1'");
   }
- 
+
   // get section
-  
 
   Future<List<Map>> getMode() async {
-    openCurrentDatabase();
-    var mode = await database.rawQuery("select * from mode");
+ final db = await databaseFuture;
+    var mode = await db.rawQuery("select * from mode");
 
     return mode;
   }
 
   Future<List<Map>> getLan() async {
-    openCurrentDatabase();
-    var lan = await database.rawQuery("select * from lan");
+ final db = await databaseFuture;
+    var lan = await db.rawQuery("select * from lan");
 
     return lan;
   }
-
 }

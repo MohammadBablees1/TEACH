@@ -21,45 +21,45 @@ class UploadVideoCubit extends Cubit<UploadVideoState> {
   UploadVideoCubit() : super(UploadVideoInitial()) {}
   Future<String?> uploadFile(
       String filePath, String videoName, len, position) async {
-    try{
+    try {
       var box = Hive.box(hiveBoxName);
-    var percent = box.get("per");
-    if (percent == null) {
-      box.put("per", 0.0);
-    }
-    var value = box.get("per");
+      var percent = box.get("per");
+      if (percent == null) {
+        box.put("per", 0.0);
+      }
+      var value = box.get("per");
 
-    var color = getRandomColorWithOpacity();
-    emit(ChangePercentage(percent: value, color: color));
+      var color = getRandomColorWithOpacity();
+      emit(ChangePercentage(percent: value, color: color));
+      
+      final file = File(filePath);
+      final uploadService = SupabaseUploadService(supabase, 'curces');
 
-    final file = File(filePath);
-    final uploadService = SupabaseUploadService(supabase, 'curces');
+      final response = await uploadService.uploadFile(
+        XFile(file.path),
+        onUploadProgress: (progress) {
+          value = ((progress.floor() / 100) * (1 / len)) + box.get("per");
 
-    final response = await uploadService.uploadFile(
-      XFile(file.path),
-      onUploadProgress: (progress) {
-        value = ((progress.floor() / 100) * (1 / len)) + box.get("per");
-
-        emit(ChangePercentage(percent: value, color: color));
-      },
-    );
-    box.put("per", value);
+          emit(ChangePercentage(percent: value, color: color));
+        },
+      );
+      box.put("per", value);
 
 // Then move to desired folder
 
-    // Get public URL
-    String? publicUrl = response;
+      // Get public URL
+      String? publicUrl = response;
 
-    return publicUrl;
-    }catch (e, stackTrace) {
-  if (kDebugMode) {
-    print("Error uploading file: $e");
-  }
-  if (kDebugMode) {
-    print("Stack trace: $stackTrace");
-  }
-  return null;
-}
+      return publicUrl;
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        print("Error uploading file: $e");
+      }
+      if (kDebugMode) {
+        print("Stack trace: $stackTrace");
+      }
+      return null;
+    }
   }
 
   String sanitizePath(String path) {
@@ -227,7 +227,7 @@ class UploadVideoCubit extends Cubit<UploadVideoState> {
             subValue =
                 sub["sub"] == "" ? parent_id.toString() : sub["sub"].toString();
           }
-        
+
           await supabase.from('curces').insert({
             'folder_id': parent_id,
             'name': courseName.toString().trim(),

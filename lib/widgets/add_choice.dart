@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:teach/cubit/loading_pdf/loading_pdf_cubit.dart';
 import 'package:teach/cubit/lunch_loading_cubit/lunch_loading_cubit.dart';
-import 'package:teach/cubit/refresh_folder/refresh_folder_cubit.dart';
+import 'package:teach/features/main-screen/presentation/view/manager/refresh_folder/refresh_folder_cubit.dart';
 import 'package:teach/cubit/slelecte_class/selecte_class_cubit.dart';
 import 'package:teach/cubit/teachCubit/teach_cubit.dart';
 import 'package:teach/data/consts/app_const.dart';
@@ -17,7 +17,7 @@ import 'package:teach/data/modules/translate_consts.dart';
 import 'package:teach/data/repository/folder_repo.dart';
 import 'package:teach/data/widgets/lunch.dart';
 import 'package:teach/main.dart';
-import 'package:teach/screens/pages/add_ads.dart';
+import 'package:teach/features/main-screen/presentation/view/widget/add_ads.dart';
 import 'package:teach/screens/pages/upload_video.dart';
 import 'package:uuid/uuid.dart';
 

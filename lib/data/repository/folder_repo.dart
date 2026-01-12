@@ -152,27 +152,17 @@ class FolderRepository {
 
   // حذف مجلد مع جميع المحتويات
   Future<void> deleteFolder(int folderId, parentId, context) async {
-     try {
-    final response = await supabase.functions.invoke(
-      'delete-folder',
-      body: {'folder_id': folderId},
-    );
-    
-     
-    
-  
-   
-    
-    
-   
-  } catch (e) {
-    if (kDebugMode) {
-      print('حدث خطأ: ${e.toString()}');
+    try {
+      final response = await supabase.functions.invoke(
+        'delete-folder',
+        body: {'folder_id': folderId},
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('حدث خطأ: ${e.toString()}');
+      }
     }
   }
-   
-    }
-  
 
   // استرجاع الهيكل الهرمي
   Future<List<Folder>> getFolderHierarchy() async {
@@ -197,70 +187,6 @@ class FolderRepository {
     return response.map((f) => Folder.fromJson(f)).toList();
   }
 
-  Future<List<Folder>> getChildFoldersForStudent() async {
-    try {
-      // 1. الحصول على بيانات المستخدم الحالي
-      final userData = await supabase
-          .from("current_user")
-          .select()
-          .eq("id", supabase.auth.currentUser!.id);
-
-      // 2. التحقق من الصف الدراسي
-
-      final rootFolders = await supabase
-          .from("folders")
-          .select("id")
-          .eq("name", userData[0]["category"])
-          .maybeSingle();
-      var secondRoot = [];
-      var response = [];
-      if (rootFolders != null && rootFolders.isNotEmpty) {
-        response = await supabase
-            .from("folders")
-            .select()
-            .eq("parent_id", rootFolders["id"])
-            .order("id", ascending: true);
-      }
-
-      if (response.isEmpty) {
-        return []; // إرجاع قائمة فارغة إذا لم يكن هناك مجلدات
-      }
-
-      return response.map((f) => Folder.fromJson(f)).toList();
-
-      // // 3. الحصول على root folder
-      // final rootFolders = await supabase
-      //     .from("folders")
-      //     .select("id")
-      //     .eq("name", userData[0]["category"]);
-
-      // // 4. الحصول على مجلد الكلية
-      // final collegeFolders = await supabase
-      //     .from('folders')
-      //     .select()
-      //     .eq('parent_id', rootFolders[0]["id"])
-      //     .eq("name", userData[0]["collage"]);
-
-      // if (collegeFolders.isEmpty) {
-      //   throw Exception("College folder not found");
-      // }
-
-      // // 5. الحصول على المجلدات الفرعية
-      // final response = await supabase
-      //     .from("folders")
-      //     .select()
-      //     .eq("parent_id", collegeFolders[0]["id"]);
-
-      // if (response.isEmpty) {
-      //   return []; // إرجاع قائمة فارغة إذا لم يكن هناك مجلدات
-      // }
-
-      // return response.map((f) => Folder.fromJson(f)).toList();
-    } catch (e) {
-      print('Error in getChildFoldersForStudent: $e');
-      return []; // إرجاع قائمة فارغة في حالة الخطأ
-    }
-  }
 
   // استرجاع المجلدات الفرعية لمجلد معين
   Future<List<Folder>> getSubfolders(int parentId) async {
@@ -332,6 +258,31 @@ class FolderRepository {
       final folderData = response[0];
 
       if (!folderData["is-subject"]) {
+        sub = folderData["name"];
+        // نعيد استدعاء الدالة بشكل return لضمان إرجاع القيمة
+        return await getSubjectFolder(folderData["parent_id"]);
+      } else {
+        // عندما نصل للمجلد الجذر (الذي ليس له parent)
+        return folderData["name"];
+      }
+    } catch (e) {
+      print('Error in getRootFolder: $e');
+      rethrow; // أو return قيمة افتراضية مثل return "";
+    }
+  }
+
+  Future<String> getTeachertFolder(int parentId) async {
+    try {
+      var response =
+          await supabase.from('folders').select('*').eq('id', parentId);
+
+      if (response.isEmpty) {
+        throw Exception('Folder not found');
+      }
+
+      final folderData = response[0];
+
+      if (!folderData["is_teacher"]) {
         sub = folderData["name"];
         // نعيد استدعاء الدالة بشكل return لضمان إرجاع القيمة
         return await getSubjectFolder(folderData["parent_id"]);

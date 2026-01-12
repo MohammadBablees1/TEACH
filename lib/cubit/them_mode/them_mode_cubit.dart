@@ -2,15 +2,10 @@ import 'package:bloc/bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:meta/meta.dart';
 import 'package:teach/data/consts/app_const.dart';
-import 'package:teach/data/sql/sql.dart';
-import 'package:teach/main.dart';
-
 part 'them_mode_state.dart';
 
 class ThemModeCubit extends Cubit<ThemModeState> {
-  ThemModeCubit() : super(ThemModeInitial()) {
-    loadInfo();
-  }
+  ThemModeCubit() : super(ThemModeInitial());
 
   loadInfo() async {
     var box = Hive.box(hiveBoxName);

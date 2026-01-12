@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -26,8 +27,12 @@ class _ViewPdfState extends State<ViewPdf> {
   }
 
   Future<void> _loadPdf() async {
-    print(widget.pdfUrl);
-    print("+++++++++++++++++");
+    if (kDebugMode) {
+      print(widget.pdfUrl);
+    }
+    if (kDebugMode) {
+      print("+++++++++++++++++");
+    }
     try {
       final file = await DefaultCacheManager().getSingleFile(widget.pdfUrl);
       final renamedFile = await _renameFile(file, "cached_pdf.pdf");
@@ -37,7 +42,9 @@ class _ViewPdfState extends State<ViewPdf> {
         _isLoading = false;
       });
     } catch (e) {
-      print("Error loading PDF: $e"); // Debugging: Print error
+      if (kDebugMode) {
+        print("Error loading PDF: $e");
+      } // Debugging: Print error
       setState(() {
         _errorMessage = getDeviceLocale() == "ar"
             ? "فشل تحميل ملف PDF. يُرجى التحقق من اتصالك بالإنترنت."

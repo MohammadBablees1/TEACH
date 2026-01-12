@@ -2,61 +2,65 @@ import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path/path.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:teach/core/wait_for_session.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/main.dart';
-import 'package:teach/data/consts/app_const.dart' as connection;
 part 'teach_state.dart';
 
 class TeachCubit extends Cubit<TeachState> {
-  TeachCubit() : super(TeachInitial()) {}
-
+  TeachCubit() : super(TeachInitial());
+  bool _checkedOnce = false;
   Future<bool> checkConnection() async {
+    if (_checkedOnce) return true;
+    _checkedOnce = true;
     await checkSignIn();
 
     return true;
   }
 
   checkSignIn() async {
+    // if (!Hive.isBoxOpen(hiveBoxName)) {
+    //   // Hive غير جاهز بعد
+    //   emit(TeachInitial());
+    //   return;
+    // }
     var box = Hive.box(hiveBoxName);
     var user = box.get(isStudent);
     var mainManager = box.get(isMainManager);
     var manager = box.get(isManager);
-    var currentUser = supabase.auth.currentUser;
-    if ((user == null &&
+
+    final currentUser = supabase.auth.currentUser;
+
+    if (user == null &&
         mainManager == null &&
         manager == null &&
-        currentUser == null)) {
+        currentUser == null) {
       emit(NoUSerFound());
-    } else {
-      if (await connection.checkConnection()) {
-        var lastVersion =
-            await supabase.from("last_version").select().eq("id", 1);
-        if (appVersion == lastVersion[0]["version"]) {
-          emit(UserFound());
-        } else if (lastVersion[0]["forced"]) {
-          emit(UpdateRecomended());
-        } else {
-          emit(UserFound());
-        }
+      return;
+    }
+
+    try {
+      /// 🔥 هذا هو السطر الحاسم
+      await ensureFreshSession();
+
+      final lastVersion =
+          await supabase.from("last_version").select().eq("id", 1).single();
+
+      if (appVersion == lastVersion["version"]) {
+        emit(UserFound());
+      } else if (lastVersion["forced"] == true) {
+        emit(UpdateRecomended());
       } else {
         emit(UserFound());
       }
-
-      // var data = await FirebaseFirestore.instance
-      //     .collection("update")
-      //     .doc("09pJXphQbASA10QcPhby")
-      //     .get();
-      // var isUpdateReq = await data.data()!["is_updated"];
-      // if (isUpdateReq) {
-      //   emit(UpdateApp());
-      // } else {
-
-      // }
+    } catch (e, s) {
+      debugPrint("❌ Supabase error: $e");
+      debugPrintStack(stackTrace: s);
+      emit(NoUSerFound());
     }
   }
 
@@ -107,51 +111,6 @@ class TeachCubit extends Cubit<TeachState> {
     } catch (e) {}
   }
 
-  Future<void> createAd(
-    File file,
-    String collage,
-  ) async {
-    try {
-      // 1. Generate unique filename
-      //  final fileName = 'ads/${DateTime.now().millisecondsSinceEpoch}${path.extension(file.path)}';
-
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'ads/$timestamp${extension(file.path)}';
-      final fileSize = await file.length();
-      int bytesUploaded = 0;
-
-      // 2. Create progress-tracking stream
-
-      final encodedFileName = Uri.encodeComponent(fileName);
-      // 3. Upload to Supabase Storage
-      await supabase.storage
-          .from('ads') // Your bucket name
-          .upload(
-            fileName,
-            file,
-            // fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
-          );
-
-      // 4. Get public URL
-      final imageUrl = supabase.storage.from('ads').getPublicUrl(fileName);
-      // Debug print
-      // 5. Store metadata in Supabase Database
-
-      await supabase
-          .from('ads') // Your table name
-          .insert({
-        'imageUrl': imageUrl,
-        'collage': collage,
-        "name": fileName,
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error occurred: $e");
-      }
-
-      rethrow;
-    } finally {}
-  }
   // Future<void> createAd(file, cateName, grade, collage) async {
   //   try {
 

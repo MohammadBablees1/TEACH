@@ -14,7 +14,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 import 'package:teach/cubit/loading_pdf/loading_pdf_cubit.dart';
 import 'package:teach/cubit/lunch_loading_cubit/lunch_loading_cubit.dart';
-import 'package:teach/cubit/refresh_folder/refresh_folder_cubit.dart';
+import 'package:teach/features/main-screen/presentation/view/manager/refresh_folder/refresh_folder_cubit.dart';
 
 import 'package:teach/cubit/timer_cubit/timer_cubit_cubit.dart';
 import 'package:teach/data/consts/app_const.dart';
@@ -29,7 +29,7 @@ import 'package:teach/screens/pages/check_connection.dart';
 import 'package:teach/screens/pages/code_generater.dart';
 import 'package:teach/screens/pages/play_video.dart';
 import 'package:teach/screens/pages/quize.dart';
-import 'package:teach/screens/pages/sell_point.dart';
+import 'package:teach/features/sell_point/presentation/sell_point.dart';
 import 'package:teach/screens/pages/upload_video.dart';
 import 'package:teach/widgets/add_choice.dart';
 import 'package:teach/widgets/no_data_found.dart';
@@ -123,7 +123,7 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
           body: SingleChildScrollView(
             child: Column(
               children: [
-                Container(
+                SizedBox(
                   height: getWidth(context) * .2,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -327,7 +327,7 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
                           box.get(isManager) ? "" : data[0]["codes"] ?? "";
                       codes = box.get(isStudent) ? data[0]["codes"] ?? "" : "";
                       var check = false;
-                     
+
                       if (codes is List) {
                         for (var i = 0; i < codes.length; i++) {
                           if (codes[i]
@@ -459,7 +459,7 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
                       ),
                       child: Column(
                         children: [
-                          Container(
+                          SizedBox(
                             width: getWidth(context),
                             height: getWidth(context) * .35,
                             child: Stack(
@@ -2008,7 +2008,8 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
                             context
                                 .read<LunchLoadingCubit>()
                                 .lunchLoading(true);
-                            await _repo.deleteFolder(id, widget.parentId, context);
+                            await _repo.deleteFolder(
+                                id, widget.parentId, context);
                             context
                                 .read<LunchLoadingCubit>()
                                 .lunchLoading(false);
@@ -2189,9 +2190,13 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
                                     getHeight(context));
                               }
                             },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  mode ? nightBar["buttons"] : dayBar["blue3"],
+                            ),
                             child: state is LunchLoading
                                 ? state.loading
-                                    ? Center(
+                                    ? const Center(
                                         child: CircularProgressIndicator(
                                           color: Colors.white,
                                         ),
@@ -2224,10 +2229,6 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
                                       color: Colors.white,
                                     ),
                                   ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  mode ? nightBar["buttons"] : dayBar["blue3"],
-                            ),
                           ),
                           ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -2266,6 +2267,8 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
   void showCodeDialoge(id) {
     GlobalKey<FormState> key = GlobalKey();
     TextEditingController numberOfCodeController = TextEditingController();
+    TextEditingController teacherController = TextEditingController();
+    TextEditingController subjectController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) {
@@ -2334,6 +2337,8 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
                                 var subRoot = await repo.getSubRootFolder(id);
                                 var subjectFolder =
                                     await repo.getSubjectFolder(id);
+                                var teacherFolder =
+                                    await repo.getTeachertFolder(id);
                                 var formatedName = "";
 
                                 if (subjectFolder.isNotEmpty &&
@@ -2341,17 +2346,17 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
                                         nameOfCurce[0]["name"]
                                             .toString()
                                             .trim()) {
-                                  
                                   formatedName =
                                       "${rootFolder} - ${subRoot} - ${subjectFolder} - ${nameOfCurce[0]["name"]}";
                                 } else {
-                                  
-                                 formatedName = "${rootFolder} - ${subRoot} - ${nameOfCurce[0]["name"]}";
+                                  formatedName =
+                                      "${rootFolder} - ${subRoot} - ${nameOfCurce[0]["name"]}";
                                 }
                                 var box = Hive.box(hiveBoxName);
                                 var managerName = box.get(isMainManager)
                                     ? box.get("Mname")
                                     : box.get("info")[0];
+                              
                                 for (var i = 0;
                                     i <
                                         int.parse(
@@ -2365,6 +2370,8 @@ class _ShowFolderDetailesState extends State<ShowFolderDetailes> {
                                     "folder_id": id,
                                     "generator-name":
                                         managerName.toString().trim(),
+                                    "subject": subjectFolder,
+                                    "teacher": teacherFolder,
                                   });
                                 }
                               }

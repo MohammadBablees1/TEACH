@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:teach/cubit/loading_pdf/loading_pdf_cubit.dart';
 import 'package:teach/cubit/lunch_loading_cubit/lunch_loading_cubit.dart';
-import 'package:teach/cubit/refresh_folder/refresh_folder_cubit.dart';
+import 'package:teach/features/main-screen/presentation/view/manager/refresh_folder/refresh_folder_cubit.dart';
 import 'package:teach/cubit/upload_video_cubit/upload_video_cubit.dart';
 import 'package:teach/cubit/whate_to_uploade/whate_to_uploade_cubit.dart';
 import 'package:teach/data/widgets/lunch.dart';

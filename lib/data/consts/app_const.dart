@@ -357,39 +357,7 @@ Future<void> showNotification(RemoteMessage message) async {
   }
 }
 
-Future<void> registerFCMToken() async {
-  // 1. الحصول على رمز الجهاز من Firebase
-  String? token = await FirebaseMessaging.instance.getToken();
 
-  // 2. إذا كان المستخدم مسجل الدخول، احفظ الرمز في Supabase
-  final user = Supabase.instance.client.auth.currentUser;
-
-  if (user != null && token != null) {
-    var box = Hive.box(hiveBoxName);
-    final data = await supabase
-        .from("current_user")
-        .select()
-        .eq("id", user.id)
-        .maybeSingle();
-    await Supabase.instance.client.from('users').upsert({
-      'id': user.id,
-      'fcm_token': token,
-      "role":
-          box.get(isMainManager) || box.get(isManager) ? "" : data!["category"],
-      'updated_at': DateTime.now().toIso8601String(),
-    });
-  }
-
-  // 3. تحديث الرمز تلقائياً إذا تغير (مهم للأمان)
-  FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
-    if (user != null) {
-      await Supabase.instance.client
-          .from('users')
-          .upsert({'id': user.id, 'fcm_token': newToken});
-    }
-  });
-  await FirebaseMessaging.instance.subscribeToTopic('all_users');
-}
 
 Future initUserInfo() async {
   var hiveInfo = [];
@@ -536,6 +504,17 @@ phoneValidator(String number) {
         : "The phone number cannot contain letters or symbols!";
   }
 }
+universityNumberValidator(String number) {
+  if (number.isEmpty) {
+    return getDeviceLocale() == "ar"
+        ? "لا يمكن أن يكون هذا الحقل فارغاً"
+        : "This field cannot be empty.";
+  } else if (!checkString(number)) {
+    return getDeviceLocale() == "ar"
+        ? "لا يمكن أن يحوي الرقم الجامعي على حروف أو رموز!"
+        : "The phone number cannot contain letters or symbols!";
+  }
+}
 
 codeGeneratorValidator(String number) {
   if (number.isEmpty) {
@@ -591,13 +570,9 @@ bool isValidString(String input) {
 
 Future<bool> checkConnection() async {
   var connectivityResult = await Connectivity().checkConnectivity();
-
-  // Check if the device is connected to any network
   if (connectivityResult.first == ConnectivityResult.none) {
-    return false; // No network connection
+    return false; 
   }
-
-  // Check for real internet access
   return true;
 }
 

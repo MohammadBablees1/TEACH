@@ -11,7 +11,7 @@ import 'package:teach/data/consts/day_neight.dart';
 import 'package:teach/data/modules/translate_consts.dart';
 import 'package:teach/data/widgets/lunch.dart';
 import 'package:teach/main.dart';
-import 'package:teach/screens/pages/student_main_screen.dart';
+import 'package:teach/features/student-main-screen/presentation/student_main_screen.dart';
 import 'package:teach/screens/pages/update_password_screen.dart';
 
 class UpdateUserPassword extends StatefulWidget {

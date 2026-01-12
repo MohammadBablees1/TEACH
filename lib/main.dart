@@ -1,29 +1,37 @@
-import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:teach/cubit/change_name/change_name_cubit.dart';
+import 'package:teach/core/auth_gate.dart';
+import 'package:teach/features/student-main-screen/presentation/manager/logout_loading/logout_loading_cubit.dart';
+import 'package:teach/features/student-main-screen/presentation/student_main_screen.dart';
+import 'package:teach/features/update_password/presentation/manager/crrent_password_visibility/current_password_visibility_cubit.dart';
+import 'package:teach/features/update_password/presentation/manager/new_password_visibility/new_password_visibility_cubit.dart';
+import 'package:teach/features/update_password/presentation/manager/update_password_loading/update_password_loading_cubit.dart';
+import 'package:teach/features/user_profile/presentation/manager/change_name/change_name_cubit.dart';
 import 'package:teach/cubit/color_me/color_me_cubit.dart';
-import 'package:teach/cubit/managerScreen/manager_screen_cubit.dart';
+import 'package:teach/features/bar_code_scanner/presentation/manager/catch_code_for_sign_in/catch_code_for_sign_in_cubit.dart';
+import 'package:teach/features/login/presentation/manager/login_confirm_password_visibility/login_confirm_password_visibility_cubit.dart';
+import 'package:teach/features/login/presentation/manager/login_loading/login_loading_cubit.dart';
+import 'package:teach/features/login/presentation/manager/login_password_visibility/login_password_visibility_cubit.dart';
+import 'package:teach/features/main-screen/presentation/view/manager/add_ad_loading/add_ad_loading_cubit.dart';
+import 'package:teach/features/main-screen/presentation/view/manager/add_folder_loading/add_folder_loading_cubit.dart';
+import 'package:teach/features/main-screen/presentation/view/manager/add_phone_number_loading/add_phone_number_cubit.dart';
+import 'package:teach/features/main-screen/presentation/view/manager/managerScreen/manager_screen_cubit.dart';
 import 'package:teach/cubit/phone_number/phone_number_cubit.dart';
 import 'package:teach/cubit/search_code/selected_code_search_cubit.dart';
 
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/adapters.dart';
+  import 'package:hive_flutter/adapters.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:teach/cubit/animatedContainerTow/animated_container_tow_cubit.dart';
 import 'package:teach/cubit/changeOpacity/change_opacity_cubit.dart';
 import 'package:teach/cubit/change_code/code_changed_cubit.dart';
 import 'package:teach/cubit/check_connection/check_connection_cubit.dart';
 import 'package:teach/cubit/clauserCubit/clauser_index_cubit.dart';
-import 'package:teach/cubit/home_search/home_search_cubit.dart';
+import 'package:teach/features/recorded_code/presentation/manager/home_search/home_search_cubit.dart';
 import 'package:teach/cubit/loading_pdf/loading_pdf_cubit.dart';
 import 'package:teach/cubit/lunch_loading_cubit/lunch_loading_cubit.dart';
 import 'package:teach/cubit/password/password_cubit.dart';
-import 'package:teach/cubit/refresh_folder/refresh_folder_cubit.dart';
+import 'package:teach/features/main-screen/presentation/view/manager/refresh_folder/refresh_folder_cubit.dart';
 import 'package:teach/cubit/search/search_cubit.dart';
 import 'package:teach/cubit/selected_value/selected_value_cubit.dart';
 import 'package:teach/cubit/slelecte_class/selecte_class_cubit.dart';
@@ -35,12 +43,13 @@ import 'package:teach/cubit/upload_video_cubit/upload_video_cubit.dart';
 import 'package:teach/cubit/whate_to_uploade/whate_to_uploade_cubit.dart';
 import 'package:teach/data/consts/app_const.dart';
 import 'package:teach/data/consts/day_neight.dart';
-import 'package:teach/firebase_options.dart';
-import 'package:teach/screens/main_screen.dart';
-import 'package:teach/screens/page_veiw.dart';
-import 'package:teach/screens/pages/student_main_screen.dart';
+import 'package:teach/features/sign_in/presentation/manager/sign_in_loading/sign_in_loading_cubit.dart';
+import 'package:teach/features/student-main-screen/presentation/manager/manual_code_loading/manual_code_loading_cubit.dart';
+import 'package:teach/features/student-main-screen/presentation/manager/open_popular_curse_loading/open_popular_curse_loading_cubit.dart';
+import 'package:teach/features/user_profile/presentation/manager/student_profile_loading/student_profile_loading_cubit.dart';
+import 'package:teach/features/main-screen/presentation/view/main_screen.dart';
+import 'package:teach/features/welcom_screen/presentation/page_veiw.dart';
 import 'package:teach/screens/pages/update_screen.dart';
-import 'package:teach/screens/waiting_screen.dart';
 
 void main() async {
   // TeXRederingServer.renderingEngine = const TeXViewRenderingEngine.mathjax();
@@ -51,77 +60,140 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: "api.env");
+ await dotenv.load(fileName: "api.env");
+
   await Supabase.initialize(
     url: dotenv.env["SUPABASE_URL"].toString(),
     anonKey: dotenv.env["SUPABASE_KEY"].toString(),
-  );
-
-  await Hive.initFlutter();
-  await Hive.openBox(hiveBoxName);
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
- // FirebaseMessaging.instance.setAutoInitEnabled(false);
-await AwesomeNotifications().initialize(
-  null,
-  [
-    NotificationChannel(
-      channelKey: 'basic_channel',
-      channelName: 'Basic Notifications',
-      channelDescription: 'Channel for basic notifications',
-      importance: NotificationImportance.High,
-      defaultColor: Colors.blue,
-      ledColor: Colors.white,
-      playSound: true,
-      enableVibration: true,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce, // IMPORTANT
     ),
-  ],
-);
+  );
 
-  // طلب إذن الإشعارات (لـ iOS)
-  await AwesomeNotifications().requestPermissionToSendNotifications();
-FirebaseMessaging.onMessage.listen((RemoteMessage message) async{
-  await  showNotification(message);
-});
-  // معالجة الإشعارات في الخلفية
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+ 
   runApp(
-    MultiBlocProvider(providers: [
-      BlocProvider(create: (_) => TeachCubit()..checkConnection()),
-      BlocProvider(create: (_) => RefreshFolderCubit()),
-      BlocProvider(create: (_) => UploadVideoCubit()),
-      BlocProvider(create: (_) => ClauserIndexCubit()),
-      BlocProvider(create: (_) => LunchLoadingCubit()),
-      BlocProvider(create: (_) => TimerCubitCubit()),
-      BlocProvider(create: (_) => LoadingPdfCubit()),
-      BlocProvider(create: (_) => PasswordCubit()),
-      BlocProvider(create: (_) => AnimatedContainerTowCubit()),
-      BlocProvider(create: (_) => SearchCubit()),
-      BlocProvider(create: (_) => ThemModeCubit()),
-      BlocProvider(create: (_) => CodeChangedCubit()),
-      BlocProvider(create: (_) => CheckConnectionCubit()),
-      BlocProvider(create: (_) => HomeSearchCubit()),
-      BlocProvider(create: (_) => ChangeOpacityCubit()),
-      BlocProvider(create: (_) => SelecteClassCubit()),
-      BlocProvider(create: (_) => SelectedValueCubit()),
-      BlocProvider(create: (_) => SelectedCodeSearchCubit()),
-      BlocProvider(create: (_) => PhoneNumberCubit()),
-      BlocProvider(create: (_) => WhateToUploadeCubit()),
-      BlocProvider(create: (_) => ColorMeCubit()),
-      BlocProvider(create: (_) => ManagerScreenCubit()),
-      BlocProvider(create: (_) => ChangeNameCubit()),
+    MultiBlocProvider(
+      
+      providers: [
+      BlocProvider(
+        lazy: true,
+        create: (_) => TeachCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => RefreshFolderCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => UploadVideoCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => ClauserIndexCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => LunchLoadingCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => TimerCubitCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => LoadingPdfCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => PasswordCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => AnimatedContainerTowCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => SearchCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => ThemModeCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => CodeChangedCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => CheckConnectionCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => HomeSearchCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => ChangeOpacityCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => SelecteClassCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => SelectedValueCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => SelectedCodeSearchCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => PhoneNumberCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => WhateToUploadeCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => ColorMeCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => ManagerScreenCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => ChangeNameCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => AddFolderLoadingCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => AddAdLoadingCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => AddPhoneNumberCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => SignInLoadingCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => CatchCodeForSignInCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => LoginPasswordVisibilityCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => LoginConfirmPasswordVisibilityCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => LoginLoadingCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => ManualCodeLoadingCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => OpenPopularCurseLoadingCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => StudentProfileLoadingCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => UpdatePasswordLoadingCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => CurrentPasswordVisibilityCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => NewPasswordVisibilityCubit()),
+      BlocProvider(
+        lazy: true,
+        create: (_) => LogoutLoadingCubit()),
     ], child: const MyApp()),
   );
 }
 
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  await showNotification(message);
-}
+
 
 final supabase = Supabase.instance.client;
 
@@ -131,16 +203,18 @@ class MyApp extends StatefulWidget {
   @override
   State<MyApp> createState() => _MyAppState();
 
+  // ignore: library_private_types_in_public_api
   static _MyAppState? of(BuildContext context) =>
       context.findAncestorStateOfType<_MyAppState>();
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+
   @override
   Widget build(BuildContext context) {
     final ThemeData darkTheme = ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: Color(0xFF121212),
+      scaffoldBackgroundColor: const Color(0xFF121212),
       bottomAppBarTheme: BottomAppBarTheme(
         color: nightBar["orange"],
       ),
@@ -149,8 +223,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               ElevatedButton.styleFrom(backgroundColor: nightBar["buttons"])),
       appBarTheme: AppBarTheme(
         color: nightBar["orange"],
-        iconTheme: IconThemeData(color: Colors.white),
-        titleTextStyle: TextStyle(
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: const TextStyle(
           color: Colors.white,
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -162,8 +236,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       scaffoldBackgroundColor: Colors.white,
       appBarTheme: AppBarTheme(
           color: dayBar["blue3"],
-          iconTheme: IconThemeData(color: Colors.white),
-          titleTextStyle: TextStyle(
+          iconTheme: const IconThemeData(color: Colors.white),
+          titleTextStyle: const TextStyle(
               color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
       elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -173,7 +247,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         color: dayBar["blue"],
       ),
       primarySwatch: dayBar["blue"],
-      extensions: <ThemeExtension<dynamic>>[],
+      extensions: const <ThemeExtension<dynamic>>[],
     );
     return BlocBuilder<ThemModeCubit, ThemModeState>(
       builder: (context, state) {
@@ -181,14 +255,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           debugShowCheckedModeBanner: false,
           locale: state is ChangeLanguage
               ? state.language
-                  ? Locale("en")
-                  : Locale("ar")
-              : Locale("ar"),
-          supportedLocales: [
+                  ? const Locale("en")
+                  : const Locale("ar")
+              : const Locale("ar"),
+          supportedLocales: const [
             Locale('en'), // الإنجليزية
             Locale('ar'), // العربية
           ],
-          localizationsDelegates: [
+          localizationsDelegates: const [
             // AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
@@ -209,19 +283,20 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               //   return ch.CheckConnection();
               // } else
               if (state is NoUSerFound) {
-                return PageVeiwScreen();
+                return const PageVeiwScreen();
               } else if (state is UpdateRecomended) {
-                return UpdateScreen();
+                return const UpdateScreen();
               } else if (state is UserFound) {
                 var box = Hive.box(hiveBoxName);
                 var student = box.get(isStudent);
                 if (student != null && student) {
-                  return StudentMainScreen();
+                  
+                  return const StudentMainScreen();
                 } else {
-                  return MainScreen();
+                  return const MainScreen();
                 }
               } else {
-                return WaitingScreen();
+                return const AuthGate();
               }
             },
           ),

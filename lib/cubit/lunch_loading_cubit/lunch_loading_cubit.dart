@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -19,19 +21,19 @@ class LunchLoadingCubit extends Cubit<LunchLoadingState> {
   }
 
   getCodeLoding(loading, index) {
-    emit(GetCodeLoading(loading: loading, index: index));
     
+    emit(GetCodeLoading(loading: loading, index: index));
   }
 
   generatePdf(loading, index) {
     emit(GeneratePdf(loading: loading, index: index));
-    
   }
+
   deleteAllCodesFromUser(loading, index) {
     emit(DeleteAllCodesFromUser(loading: loading, index: index));
   }
+
   sendNotification(loading) {
     emit(SendNotification(loading: loading));
-    
   }
 }

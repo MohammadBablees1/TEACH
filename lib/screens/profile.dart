@@ -12,11 +12,11 @@ import 'package:teach/data/consts/day_neight.dart';
 import 'package:teach/data/sql/sql.dart';
 import 'package:teach/data/widgets/lunch.dart';
 import 'package:teach/main.dart';
-import 'package:teach/screens/page_veiw.dart';
-import 'package:teach/screens/pages/bar_code_scanner.dart';
+import 'package:teach/features/welcom_screen/presentation/page_veiw.dart';
+import 'package:teach/features/bar_code_scanner/presentation/bar_code_scanner.dart';
 import 'package:teach/screens/pages/code_generater.dart';
 import 'package:teach/screens/pages/record_codes.dart';
-import 'package:teach/screens/pages/update_password.dart';
+import 'package:teach/features/update_password/presentation/update_password.dart';
 
 class Profile extends StatefulWidget {
   var home = true, len = 0;
